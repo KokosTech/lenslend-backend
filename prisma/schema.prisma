@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============== Models ===============
+
+// =============== User Models ===============
+
+model User {
+  uuid              String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  phone             String              @unique
+  password          String
+  role              Role                @default(USER)
+  profile_pic       String?
+  header_pic        String?
+  bio               String?
+  verified_email    Boolean             @default(false)
+  verified_phone    Boolean             @default(false)
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  deleted_at        DateTime?
+  settings          UserSettings?
+  savedListings     Listing[]           @relation("SavedListings")
+  listings          Listing[]           @relation("UserListings")
+  listingComments   ListingComment[]
+  listingsRatings   ListingRating[]
+  listingReports    ListingReport[]
+  UserSavedListings UserSavedListings[]
+}
+
+model UserSettings {
+  uuid                 String    @id @default(uuid())
+  preferred_theme      String    @default("light")
+  marketing_emails     Boolean   @default(true)
+  in_app_notifications Boolean   @default(true)
+  email_notifications  Boolean   @default(true)
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  deleted_at           DateTime?
+  user                 User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid            String    @unique
+}
+
+model UserSavedListings {
+  uuid         String    @id @default(uuid())
+  created_at   DateTime  @default(now())
+  deleted_at   DateTime?
+  user         User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid    String
+  listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+}
+
+// =============== Listing Models ===============
+
+model Listing {
+  uuid              String              @id @default(uuid())
+  title             String
+  description       String
+  type              ListingType
+  price             Float?
+  state             State?
+  rental            Int?
+  negotiable        Boolean             @default(false)
+  status            Status              @default(PUBLIC)
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  deleted_at        DateTime?
+  user              User                @relation("UserListings", fields: [user_uuid], references: [uuid])
+  user_uuid         String
+  category          Category            @relation(fields: [category_uuid], references: [uuid])
+  category_uuid     String
+  images            ListingImage[]
+  tags              ListingTag[]
+  comments          ListingComment[]
+  ratings           ListingRating[]
+  reports           ListingReport[]
+  Tag               Tag?                @relation(fields: [tagUuid], references: [uuid])
+  tagUuid           String?
+  savedBy           User[]              @relation("SavedListings")
+  UserSavedListings UserSavedListings[]
+}
+
+model Category {
+  uuid           String     @id @default(uuid())
+  name           String
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  deleted_at     DateTime?
+  parent         Category?  @relation("SubCategories", fields: [parent_uuid], references: [uuid])
+  parent_uuid    String?
+  sub_categories Category[] @relation("SubCategories")
+  listings       Listing[]
+}
+
+model ListingImage {
+  uuid         String    @id @default(uuid())
+  url          String
+  alt          String?
+  status       Status    @default(PUBLIC)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+  listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+}
+
+model ListingTag {
+  listing      Listing @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+  tag          Tag     @relation(fields: [tag_uuid], references: [uuid])
+  tag_uuid     String
+
+  @@id([listing_uuid, tag_uuid])
+}
+
+model Tag {
+  uuid       String       @id @default(uuid())
+  name       String
+  status     Status       @default(PUBLIC)
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  deleted_at DateTime?
+  listings   Listing[]
+  ListingTag ListingTag[]
+}
+
+model ListingComment {
+  uuid         String    @id @default(uuid())
+  content      String
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+  user         User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid    String
+  listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+}
+
+model ListingRating {
+  uuid         String    @id @default(uuid())
+  rating       Int
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+  user         User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid    String
+  listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+}
+
+model ListingReport {
+  uuid         String    @id @default(uuid())
+  reason       String
+  created_at   DateTime  @default(now())
+  deleted_at   DateTime?
+  user         User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid    String
+  listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
+  listing_uuid String
+}
+
+// ========= History Models =========
+
+
+// =============== Enums ===============
+
+enum Role {
+  USER
+  MOD
+  ADMIN
+}
+
+enum State {
+  NEW
+  LIKE_NEW
+  USED
+  REFURBISHED
+}
+
+enum Status {
+  PUBLIC
+  PRIVATE
+  REMOVED
+  DELETED
+}
+
+enum ListingType {
+  PRODUCT
+  SERVICE
+}
