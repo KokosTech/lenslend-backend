@@ -14,6 +14,7 @@ datasource db {
 model User {
   uuid              String              @id @default(uuid())
   name              String
+  username          String              @unique
   email             String              @unique
   phone             String              @unique
   password          String
@@ -168,7 +169,6 @@ model ListingReport {
 }
 
 // ========= History Models =========
-
 
 // =============== Enums ===============
 
