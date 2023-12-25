@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -7,6 +9,7 @@ import { compare } from 'bcrypt';
 
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { SingupDto } from './dtos/singup.dto';
 
 @Injectable()
 export class AuthService {
@@ -45,5 +48,19 @@ export class AuthService {
         id: user.uuid,
       }),
     };
+  }
+
+  async signup(body: SingupDto) {
+    const user = await this.userService.findByEmail(body.email);
+
+    if (user) {
+      throw new ConflictException('EMAIL_ALREADY_IN_USE');
+    }
+
+    if (body.password !== body.confirmPassword) {
+      throw new BadRequestException('PASSWORDS_DO_NOT_MATCH');
+    }
+
+    return this.userService.createUser(body);
   }
 }
