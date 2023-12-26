@@ -79,12 +79,22 @@ export class AuthService {
       throw new ConflictException('EMAIL_ALREADY_IN_USE');
     }
 
-    if (body.password !== body.confirmPassword) {
-      throw new BadRequestException('PASSWORDS_DO_NOT_MATCH');
     const newUser = plainToClass(CreateUserDto, body);
     await this.userService.createUser(newUser);
 
     return this.login(body.email, body.password);
+  }
+
+  async logout(accessToken: string, refreshToken: string) {
+    const { id, tokenId, exp }: RefreshTokenInterface =
+      await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+    const user = await this.userService.findByUUID(id);
+
+    if (!user) {
+      throw new NotFoundException('USER_NOT_FOUND');
     }
 
     const isTokenIdValid = await this.redisService.get(tokenId);
