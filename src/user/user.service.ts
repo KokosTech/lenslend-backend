@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -27,6 +27,38 @@ export class UserService {
   }
 
   async createUser(user: CreateUserDto): Promise<User> {
+    const userInUse = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            email: user.email,
+          },
+          {
+            username: user.username,
+          },
+          {
+            phone: user.phone,
+          },
+        ],
+      },
+    });
+
+    if (userInUse.length > 0) {
+      userInUse.map((existingUser) => {
+        if (existingUser.email === user.email) {
+          throw new ConflictException('EMAIL_IN_USE');
+        }
+
+        if (existingUser.username === user.username) {
+          throw new ConflictException('USERNAME_IN_USE');
+        }
+
+        if (existingUser.phone === user.phone) {
+          throw new ConflictException('PHONE_IN_USE');
+        }
+      });
+    }
+
     user.password = await hash(user.password, roundsOfHashing);
 
     return this.prisma.user.create({
