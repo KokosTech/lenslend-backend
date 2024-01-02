@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/client"
 }
 
 datasource db {
@@ -35,6 +34,15 @@ model User {
   listingsRatings   ListingRating[]
   listingReports    ListingReport[]
   UserSavedListings UserSavedListings[]
+  chats             Chat[]              @relation("ChatUsers")
+  Chat              Chat?               @relation(fields: [chatUuid], references: [uuid])
+  chatUuid          String?
+  Message           Message[]
+  PlaceCreator      Place[]             @relation("PlaceCreator")
+  PlaceOwner        Place[]             @relation("PlaceOwner")
+  PlaceReview       PlaceReview[]
+  PlaceReport       PlaceReport[]
+  PlaceReviewReply  PlaceReviewReply[]
 }
 
 model UserSettings {
@@ -66,6 +74,7 @@ model Listing {
   uuid              String              @id @default(uuid())
   title             String
   description       String
+  location          String?
   type              ListingType
   price             Float?
   state             State?
@@ -106,6 +115,7 @@ model ListingImage {
   uuid         String    @id @default(uuid())
   url          String
   alt          String?
+  order        Int?
   status       Status    @default(PUBLIC)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
@@ -132,6 +142,7 @@ model Tag {
   deleted_at DateTime?
   listings   Listing[]
   ListingTag ListingTag[]
+  PlaceTag   PlaceTag[]
 }
 
 model ListingComment {
@@ -167,6 +178,152 @@ model ListingReport {
   user_uuid    String
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
+}
+
+// =============== Places Models ===============
+
+model Place {
+  uuid         String         @id @default(uuid())
+  name         String
+  description  String
+  categoryUuid String
+  category     PlaceCategory  @relation(fields: [categoryUuid], references: [uuid])
+  lat          Float
+  lng          Float
+  icon         String
+  status       Status         @default(PUBLIC)
+  creatorUuid  String
+  creator      User           @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
+  ownerUuid    String
+  owner        User           @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  deleted_at   DateTime?
+  services     PlaceService[]
+  images       PlaceImage[]
+  tags         PlaceTag[]
+  reviews      PlaceReview[]
+  reports      PlaceReport[]
+
+  @@unique([lat, lng])
+}
+
+model PlaceCategory {
+  uuid        String    @id @default(uuid())
+  name        String
+  description String
+  status      Status    @default(PUBLIC)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+  places      Place[]
+}
+
+model Service {
+  uuid          String         @id @default(uuid())
+  name          String
+  icon          String
+  color         String
+  bg_color      String
+  dark_color    String
+  dark_bg_color String
+  status        Status         @default(PUBLIC)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  deleted_at    DateTime?
+  PlaceService  PlaceService[]
+}
+
+model PlaceService {
+  uuid        String    @id @default(uuid())
+  created_at  DateTime  @default(now())
+  deleted_at  DateTime?
+  place       Place     @relation(fields: [placeUuid], references: [uuid])
+  placeUuid   String
+  service     Service   @relation(fields: [serviceUuid], references: [uuid])
+  serviceUuid String
+}
+
+model PlaceImage {
+  uuid       String    @id @default(uuid())
+  url        String
+  alt        String?
+  order      Int?
+  status     Status    @default(PUBLIC)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  place      Place     @relation(fields: [placeUuid], references: [uuid])
+  placeUuid  String
+}
+
+model PlaceTag {
+  place     Place  @relation(fields: [placeUuid], references: [uuid])
+  placeUuid String
+  tag       Tag    @relation(fields: [tagUuid], references: [uuid])
+  tagUuid   String
+
+  @@id([placeUuid, tagUuid])
+}
+
+model PlaceReview {
+  uuid             String             @id @default(uuid())
+  rating           Int
+  content          String
+  status           Status             @default(PUBLIC)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  deleted_at       DateTime?
+  user             User               @relation(fields: [userUuid], references: [uuid])
+  userUuid         String
+  place            Place              @relation(fields: [placeUuid], references: [uuid])
+  placeUuid        String
+  PlaceReviewReply PlaceReviewReply[]
+}
+
+model PlaceReviewReply {
+  uuid       String      @id @default(uuid())
+  content    String
+  status     Status      @default(PUBLIC)
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  deleted_at DateTime?
+  user       User        @relation(fields: [userUuid], references: [uuid])
+  userUuid   String
+  review     PlaceReview @relation(fields: [reviewUuid], references: [uuid])
+  reviewUuid String
+}
+
+model PlaceReport {
+  uuid       String    @id @default(uuid())
+  reason     String
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+  user       User      @relation(fields: [userUuid], references: [uuid])
+  userUuid   String
+  place      Place     @relation(fields: [placeUuid], references: [uuid])
+  placeUuid  String
+}
+
+// =============== Chat Models =============== -> MQTT Chat
+
+model Chat {
+  uuid       String    @id @default(uuid())
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  users      User[]    @relation("ChatUsers")
+  User       User[]
+}
+
+model Message {
+  uuid       String    @id @default(uuid())
+  content    String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  user       User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid  String
 }
 
 // ========= History Models =========
