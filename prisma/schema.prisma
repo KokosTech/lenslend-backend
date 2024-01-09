@@ -75,7 +75,8 @@ model Listing {
   uuid              String              @id @default(uuid())
   title             String
   description       String
-  location          String?
+  lat               Float?
+  lng               Float?
   type              ListingType
   price             Float?
   state             State?
@@ -205,7 +206,7 @@ model Place {
   tags         PlaceTag[]
   reviews      PlaceReview[]
   reports      PlaceReport[]
-  visitors     PlaceVisitor[]  @relation("PlaceVisitors")
+  visitors     PlaceVisitor[] @relation("PlaceVisitors")
 
   @@unique([lat, lng])
 }

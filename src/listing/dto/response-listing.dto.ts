@@ -12,6 +12,12 @@ export class ResponseListingDto {
   description: string;
 
   @ApiProperty()
+  lat: number;
+
+  @ApiProperty()
+  lng: number;
+
+  @ApiProperty()
   type: ListingType;
 
   @ApiProperty()
