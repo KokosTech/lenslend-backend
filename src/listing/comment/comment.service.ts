@@ -7,11 +7,31 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class CommentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+  async create(
+    userUuid: string,
+    listingUuid: string,
+    createCommentDto: CreateCommentDto,
+  ) {
+    // get user from jwt guard
+
+    return this.prisma.listingComment.create({
+      data: {
+        content: createCommentDto.content,
+        user: {
+          connect: {
+            uuid: userUuid,
+          },
+        },
+        listing: {
+          connect: {
+            uuid: listingUuid,
+          },
+        },
+      },
+    });
   }
 
-  findAll(uuid: string) {
+  async findAll(uuid: string) {
     return this.prisma.listingComment.findMany({
       select: {
         uuid: true,
@@ -31,6 +51,9 @@ export class CommentService {
         listing: {
           uuid,
         },
+      },
+      orderBy: {
+        created_at: 'desc',
       },
     });
   }

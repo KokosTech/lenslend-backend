@@ -16,6 +16,7 @@ import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TagModule } from './tag/tag.module';
     ChatModule,
     CategoryModule,
     TagModule,
+    SearchModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService],
