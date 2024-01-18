@@ -43,11 +43,14 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
 
+    console.warn('user', user);
+
     if (!user) {
       throw new NotFoundException('NO_USER_FOUND');
     }
 
     if (!(await compare(password, user.password))) {
+      console.warn('THROWING UNAUTHORIZED EXCEPTION');
       throw new UnauthorizedException('INVALID_PASSWORD');
     }
 

@@ -17,11 +17,10 @@ import { AuthEntity } from './entities/auth.entity';
 import { BlacklistEntity } from './entities/blacklist.entity';
 
 import { LoginDto } from './dtos/login.dto';
+import { LogoutDto } from './dtos/logout.dto';
 import { SingupDto } from './dtos/singup.dto';
-
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshJwtGuard } from './guards/refresh-jwt.guard';
-import { LogoutDto } from './dtos/logout.dto';
 
 @Controller('auth')
 @ApiTags('auth')
