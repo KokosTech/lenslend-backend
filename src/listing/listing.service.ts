@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from '../user/user.service';
+import { ListingSelect, ShortListingSelect } from './listing.select';
+import { User } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
-import { ListingSelect, ShortListingSelect } from './listing.select';
 
 @Injectable()
 export class ListingService {
@@ -14,56 +19,100 @@ export class ListingService {
     private readonly userService: UserService,
   ) {}
 
-  async create(createListingDto: CreateListingDto) {
-    const user = await this.userService.findByUUID(createListingDto.userId);
+  async create(user: User, createListingDto: CreateListingDto) {
+    const { uuid } = user;
+    const { categoryId, tags, images } = createListingDto;
 
-    if (!user) {
-      throw new NotFoundException('USER_NOT_FOUND');
+    if (
+      await this.prisma.category.findUnique({
+        where: {
+          uuid: categoryId,
+        },
+      })
+    ) {
+      throw new BadRequestException('CATEGORY_NOT_FOUND');
     }
 
-    const { categoryId } = createListingDto;
+    const tagIds = await Promise.all(
+      tags.map(async (tag) => {
+        const foundTag = await this.prisma.tag.findUnique({
+          where: {
+            uuid: tag,
+          },
+        });
+
+        if (!foundTag) {
+          const newTag = await this.prisma.tag.create({
+            data: {
+              name: tag,
+            },
+          });
+
+          return newTag.uuid;
+        }
+
+        return foundTag.uuid;
+      }),
+    );
 
     const listingEntity = plainToClass(Listing, createListingDto);
 
-    return this.prisma.listing.create({
+    const listing = await this.prisma.listing.create({
       data: {
-        ...listingEntity,
+        title: listingEntity.title,
+        description: listingEntity.description,
+        // lat: listingEntity.lat,
+        // lng: listingEntity.lng,
+        type: listingEntity.type,
+        price: listingEntity.price,
+        state: listingEntity.state,
+        rental: listingEntity.rental,
+        negotiable: listingEntity.negotiable,
+        status: listingEntity.status,
+        user: {
+          connect: {
+            uuid,
+          },
+        },
         category: {
           connect: {
             uuid: categoryId,
           },
         },
-        user: {
-          connect: {
-            uuid: user.uuid,
-          },
-        },
       },
-      select: {
-        uuid: true,
-        title: true,
-        description: true,
-        type: true,
-        price: true,
-        state: true,
-        rental: true,
-        negotiable: true,
-        status: true,
-        category: {
-          select: {
-            uuid: true,
-            name: true,
+    });
+
+    await Promise.all(
+      images.map(async (image, i) => {
+        const newImage = await this.prisma.listingImage.create({
+          data: {
+            url: image,
+            alt: 'Listing Image',
+            order: i,
+            listing: {
+              connect: {
+                uuid: listing.uuid,
+              },
+            },
           },
-        },
-        user: {
-          select: {
-            uuid: true,
-            name: true,
-            username: true,
-          },
-        },
-        created_at: true,
+        });
+
+        return newImage.uuid;
+      }),
+    );
+
+    await this.prisma.listingTag.createMany({
+      data: tagIds.map((tagId) => ({
+        listing_uuid: listing.uuid,
+        tag_uuid: tagId,
+      })),
+    });
+
+    return this.prisma.listing.findUnique({
+      where: {
+        uuid: listing.uuid,
       },
+      select: ListingSelect,
     });
   }
 

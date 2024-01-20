@@ -45,9 +45,15 @@ export class CreateListingDto {
   @ApiProperty()
   categoryId: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({
+    each: true,
+  })
   @ApiProperty()
-  userId: string;
-  // tagIds: [string];
+  images: string[];
+
+  @IsString({
+    each: true,
+  })
+  @ApiProperty()
+  tags: string[];
 }

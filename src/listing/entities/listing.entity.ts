@@ -21,15 +21,15 @@ export class Listing {
 
   @Expose()
   @IsNumber()
-  price?: number;
+  price: number | null;
 
   @Expose()
   @IsString()
-  state?: State;
+  state: State | null;
 
   @Expose()
   @IsNumber()
-  rental?: number;
+  rental: number | null;
 
   @Expose()
   @IsBoolean()
@@ -39,5 +39,5 @@ export class Listing {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  status: Status;
+  status?: Status;
 }
