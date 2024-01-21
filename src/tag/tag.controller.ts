@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -9,7 +17,7 @@ export class TagController {
 
   @Post()
   create(@Body() createTagDto: CreateTagDto) {
-    return this.tagService.create(createTagDto);
+    return this.tagService.createOrFind(createTagDto);
   }
 
   @Get()
@@ -17,9 +25,9 @@ export class TagController {
     return this.tagService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tagService.findOne(+id);
+  @Get(':uuid')
+  findOne(@Param('uuid') uuid: string) {
+    return this.tagService.findOne(uuid);
   }
 
   @Patch(':id')

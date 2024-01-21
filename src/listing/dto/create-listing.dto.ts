@@ -20,13 +20,12 @@ export class CreateListingDto {
 
   @IsNumber()
   @ApiProperty()
-  price?: number;
+  price?: number | null;
 
   @IsString()
   @ApiProperty()
   state?: State;
 
-  @IsNumber()
   @ApiProperty()
   rental?: number;
 

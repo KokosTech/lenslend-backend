@@ -6,69 +6,38 @@ import {
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserService } from '../user/user.service';
 import { ListingSelect, ShortListingSelect } from './listing.select';
 import { User } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
+import { TagService } from '../tag/tag.service';
 
 @Injectable()
 export class ListingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly userService: UserService,
+    private readonly tagService: TagService,
   ) {}
 
   async create(user: User, createListingDto: CreateListingDto) {
     const { uuid } = user;
     const { categoryId, tags, images } = createListingDto;
 
-    if (
-      await this.prisma.category.findUnique({
-        where: {
-          uuid: categoryId,
-        },
-      })
-    ) {
+    const category = await this.prisma.category.findUnique({
+      where: {
+        uuid: categoryId,
+      },
+    });
+
+    if (!category) {
       throw new BadRequestException('CATEGORY_NOT_FOUND');
     }
 
-    const tagIds = await Promise.all(
-      tags.map(async (tag) => {
-        const foundTag = await this.prisma.tag.findUnique({
-          where: {
-            uuid: tag,
-          },
-        });
-
-        if (!foundTag) {
-          const newTag = await this.prisma.tag.create({
-            data: {
-              name: tag,
-            },
-          });
-
-          return newTag.uuid;
-        }
-
-        return foundTag.uuid;
-      }),
-    );
-
     const listingEntity = plainToClass(Listing, createListingDto);
 
-    const listing = await this.prisma.listing.create({
+    return await this.prisma.listing.create({
       data: {
-        title: listingEntity.title,
-        description: listingEntity.description,
-        // lat: listingEntity.lat,
-        // lng: listingEntity.lng,
-        type: listingEntity.type,
-        price: listingEntity.price,
-        state: listingEntity.state,
-        rental: listingEntity.rental,
-        negotiable: listingEntity.negotiable,
-        status: listingEntity.status,
+        ...listingEntity,
         user: {
           connect: {
             uuid,
@@ -79,38 +48,27 @@ export class ListingService {
             uuid: categoryId,
           },
         },
-      },
-    });
-
-    await Promise.all(
-      images.map(async (image, i) => {
-        const newImage = await this.prisma.listingImage.create({
-          data: {
+        images: {
+          create: images.map((image, i) => ({
             url: image,
-            alt: 'Listing Image',
+            alt: image,
             order: i,
-            listing: {
-              connect: {
-                uuid: listing.uuid,
+          })),
+        },
+        tags: {
+          create: tags.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  name: tag,
+                },
+                create: {
+                  name: tag,
+                },
               },
             },
-          },
-        });
-
-        return newImage.uuid;
-      }),
-    );
-
-    await this.prisma.listingTag.createMany({
-      data: tagIds.map((tagId) => ({
-        listing_uuid: listing.uuid,
-        tag_uuid: tagId,
-      })),
-    });
-
-    return this.prisma.listing.findUnique({
-      where: {
-        uuid: listing.uuid,
+          })),
+        },
       },
       select: ListingSelect,
     });

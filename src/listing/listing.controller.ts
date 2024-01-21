@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ListingService } from './listing.service';
@@ -19,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResponseListingDto } from './dto/response-listing.dto';
+import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -28,8 +30,15 @@ export class ListingController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  create(@Body() createListingDto: CreateListingDto) {
-    return this.listingService.create(createListingDto);
+  @ApiOkResponse({
+    description: 'Create a new listing',
+    type: ResponseListingDto,
+  })
+  async create(
+    @Req() req: RequestWithUser,
+    @Body() createListingDto: CreateListingDto,
+  ) {
+    return this.listingService.create(req.user, createListingDto);
   }
 
   @Get()
