@@ -138,7 +138,7 @@ model ListingTag {
 
 model Tag {
   uuid       String       @id @default(uuid())
-  name       String
+  name       String       @unique
   status     Status       @default(PUBLIC)
   created_at DateTime     @default(now())
   updated_at DateTime     @updatedAt
