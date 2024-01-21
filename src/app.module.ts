@@ -1,4 +1,5 @@
 import {
+  ClassSerializerInterceptor,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -17,11 +18,18 @@ import { UserModule } from './user/user.module';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
 import { SearchModule } from './search/search.module';
+import { MailService } from './mail/mail.service';
+import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { ExceptionsFilter } from './common/filters/exceptions.filter';
+import { ValidationExceptionFilter } from './common/filters/validation.filter';
 
 @Module({
   imports: [
-    UserModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    UserModule,
     AuthModule,
     ListingModule,
     PlaceModule,
@@ -29,9 +37,29 @@ import { SearchModule } from './search/search.module';
     CategoryModule,
     TagModule,
     SearchModule,
+    MailModule,
   ],
   controllers: [AppController, UserController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    MailService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: FormatResponseInterceptor,
+    // },
+    {
+      provide: APP_FILTER,
+      useClass: ExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ValidationExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
