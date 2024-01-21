@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CardPlaceSelect, PlaceSelect, ShortPlaceSelect } from './place.select';
 
 @Injectable()
 export class PlaceService {
@@ -11,16 +12,9 @@ export class PlaceService {
     return 'This action adds a new place';
   }
 
-  async findAll() {
+  async findAll(format?: 'short' | 'card') {
     const places = await this.prisma.place.findMany({
-      select: {
-        uuid: true,
-        name: true,
-        icon: true,
-        description: true,
-        lng: true,
-        lat: true,
-      },
+      select: format === 'short' ? ShortPlaceSelect : CardPlaceSelect,
     });
 
     if (!places) {
@@ -30,118 +24,17 @@ export class PlaceService {
     return places;
   }
 
-  findOne(uuid: string) {
-    return this.prisma.place.findUnique({
+  async findOne(uuid: string) {
+    const place = await this.prisma.place.findUnique({
       where: {
         uuid,
       },
-      select: {
-        uuid: true,
-        name: true,
-        icon: true,
-        description: true,
-        category: {
-          select: {
-            uuid: true,
-            name: true,
-          },
-        },
-        lng: true,
-        lat: true,
-        images: {
-          select: {
-            uuid: true,
-            url: true,
-            alt: true,
-          },
-        },
-        services: {
-          select: {
-            service: {
-              select: {
-                uuid: true,
-                name: true,
-                icon: true,
-              },
-            },
-          },
-        },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                uuid: true,
-                name: true,
-              },
-            },
-          },
-        },
-        visitors: {
-          select: {
-            uuid: true,
-            created_at: true,
-            user: {
-              select: {
-                uuid: true,
-                name: true,
-                username: true,
-                bio: true,
-                phone: true,
-                profile_pic: true,
-                header_pic: true,
-              },
-            },
-          },
-          orderBy: {
-            created_at: 'desc',
-          },
-          take: 3,
-        },
-        reviews: {
-          select: {
-            uuid: true,
-            rating: true,
-            content: true,
-            created_at: true,
-            updated_at: true,
-            user: {
-              select: {
-                uuid: true,
-                name: true,
-                username: true,
-                profile_pic: true,
-                header_pic: true,
-              },
-            },
-          },
-          orderBy: {
-            created_at: 'desc',
-          },
-          take: 3,
-        },
-        status: true,
-        creator: {
-          select: {
-            uuid: true,
-            name: true,
-            username: true,
-            profile_pic: true,
-            header_pic: true,
-          },
-        },
-        owner: {
-          select: {
-            uuid: true,
-            name: true,
-            username: true,
-            profile_pic: true,
-            header_pic: true,
-          },
-        },
-        created_at: true,
-        updated_at: true,
-      },
+      select: PlaceSelect,
     });
+
+    if (!place) throw new NotFoundException('Place not found');
+
+    return place;
   }
 
   update(id: number, updatePlaceDto: UpdatePlaceDto) {

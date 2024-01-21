@@ -6,10 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { PlaceService } from './place.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('place')
 @Controller('place')
@@ -22,8 +23,13 @@ export class PlaceController {
   }
 
   @Get()
-  findAll() {
-    return this.placeService.findAll();
+  @ApiQuery({
+    name: 'format',
+    enum: ['short', 'card'],
+    required: false,
+  })
+  findAll(@Query('format') format?: 'short' | 'card') {
+    return this.placeService.findAll(format);
   }
 
   @Get(':uuid')
