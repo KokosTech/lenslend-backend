@@ -11,6 +11,8 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     const response = ctx.getResponse<Response>();
     const message = exception.message.replace(/\n/g, '');
 
+    console.log('PRISMA AAAH', exception.code);
+
     switch (exception.code) {
       case 'P2002': {
         const status = HttpStatus.CONFLICT;
@@ -22,9 +24,16 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         });
         break;
       }
-      default:
-        super.catch(exception, host);
+      case 'P2025': {
+        const status = HttpStatus.NOT_FOUND;
+        response.status(status).json({
+          code: status,
+          message,
+          data: null,
+          errors: null,
+        });
         break;
+      }
     }
   }
 }

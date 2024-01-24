@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -35,7 +31,7 @@ export class ListingService {
 
     const listingEntity = plainToClass(Listing, createListingDto);
 
-    return await this.prisma.listing.create({
+    return this.prisma.listing.create({
       data: {
         ...listingEntity,
         user: {
@@ -84,25 +80,77 @@ export class ListingService {
   }
 
   async findOne(id: string) {
-    const listing = await this.prisma.listing.findUnique({
+    return this.prisma.listing.findUniqueOrThrow({
       where: {
         uuid: id,
       },
       select: ListingSelect,
     });
+  }
 
-    if (!listing) {
-      throw new NotFoundException('LISTING_NOT_FOUND');
+  async update(id: string, user: User, updateListingDto: UpdateListingDto) {
+    const { uuid } = user;
+    const { categoryId, tags, images } = updateListingDto;
+
+    const category = await this.prisma.category.findUnique({
+      where: {
+        uuid: categoryId,
+      },
+    });
+
+    if (!category) {
+      throw new BadRequestException('CATEGORY_NOT_FOUND');
     }
 
-    return listing;
+    const listingEntity = plainToClass(Listing, updateListingDto);
+
+    return this.prisma.listing.update({
+      where: {
+        uuid: id,
+      },
+      data: {
+        ...listingEntity,
+        user: {
+          connect: {
+            uuid,
+          },
+        },
+        category: {
+          connect: {
+            uuid: categoryId,
+          },
+        },
+        images: {
+          create: images?.map((image, i) => ({
+            url: image,
+            alt: image,
+            order: i,
+          })),
+        },
+        tags: {
+          create: tags?.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  name: tag,
+                },
+                create: {
+                  name: tag,
+                },
+              },
+            },
+          })),
+        },
+      },
+      select: ListingSelect,
+    });
   }
 
-  async update(id: number, updateListingDto: UpdateListingDto) {
-    return `This action updates a #${id} listing`;
-  }
-
-  async remove(id: number) {
-    return `This action removes a #${id} listing`;
+  async remove(id: string) {
+    return this.prisma.listing.delete({
+      where: {
+        uuid: id,
+      },
+    });
   }
 }

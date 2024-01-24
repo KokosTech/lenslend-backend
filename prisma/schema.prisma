@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -213,14 +213,16 @@ model Place {
 }
 
 model PlaceCategory {
-  uuid        String    @id @default(uuid())
-  name        String
-  description String
-  status      Status    @default(PUBLIC)
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
-  deleted_at  DateTime?
-  places      Place[]
+  uuid           String          @id @default(uuid())
+  name           String
+  status         Status          @default(PUBLIC)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  deleted_at     DateTime?
+  parent         PlaceCategory?  @relation("SubCategories", fields: [parent_uuid], references: [uuid])
+  parent_uuid    String?
+  places         Place[]
+  sub_categories PlaceCategory[] @relation("SubCategories")
 }
 
 model Service {

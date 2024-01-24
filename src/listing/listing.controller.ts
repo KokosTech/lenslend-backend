@@ -21,6 +21,8 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResponseListingDto } from './dto/response-listing.dto';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
+import { RoleGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -74,8 +76,16 @@ export class ListingController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateListingDto: UpdateListingDto) {
-    return this.listingService.update(+id, updateListingDto);
+  @Roles('ADMIN', 'USER')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseGuards()
+  @ApiBearerAuth()
+  update(
+    @Param('id') id: string,
+    @Req() req: RequestWithUser,
+    @Body() updateListingDto: UpdateListingDto,
+  ) {
+    return this.listingService.update(id, req.user, updateListingDto);
   }
 
   @Delete(':id')
