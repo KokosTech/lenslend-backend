@@ -33,7 +33,7 @@ export class CreateUserDto {
   name: string;
 
   @Expose()
-  @IsPhoneNumber()
+  @IsPhoneNumber('BG')
   @IsNotEmpty()
   phone: string;
 }

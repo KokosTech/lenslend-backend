@@ -15,7 +15,7 @@ import { UserService } from '../user/user.service';
 import { RedisService } from '../redis/redis.service';
 
 import { jwtConstants } from './constants';
-import { SingupDto } from './dtos/singup.dto';
+import { SignupDto, SignupOneDto } from './dtos/signupDto';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
 import { RefreshTokenInterface } from './interfaces/refreshToken.interface';
 
@@ -71,18 +71,50 @@ export class AuthService {
     };
   }
 
-  async signup(body: SingupDto) {
-    if (body.password !== body.confirmPassword) {
-      throw new BadRequestException('PASSWORDS_DO_NOT_MATCH');
-    }
+  async validateSignup(body: SignupDto | SignupOneDto, step: number) {
+    if (step === 1) {
+      if (body.password !== body.confirmPassword) {
+        throw new BadRequestException({
+          message: 'passwordConfirm',
+          code: 'PASSWORDS_DO_NOT_MATCH',
+        });
+      }
 
-    const user = await this.userService.findByEmail(body.email);
+      const email = await this.userService.findByEmail(body.email);
 
-    if (user) {
-      throw new ConflictException('EMAIL_ALREADY_IN_USE');
+      if (email) {
+        throw new ConflictException({
+          message: 'email',
+          code: 'EMAIL_ALREADY_IN_USE',
+        });
+      }
+
+      const username = await this.userService.findByUsername(body.username);
+
+      if (username) {
+        throw new ConflictException({
+          message: 'username',
+          code: 'USERNAME_ALREADY_IN_USE',
+        });
+      }
+    } else if (step === 2 && body instanceof SignupDto) {
+      const phone = await this.userService.findByPhone(body.phone);
+
+      if (phone) {
+        throw new ConflictException({
+          message: 'phone',
+          code: 'PHONE_ALREADY_IN_USE',
+        });
+      }
     }
+  }
+
+  async signup(body: SignupDto) {
+    await this.validateSignup(body, 2);
 
     const newUser = plainToClass(CreateUserDto, body);
+    newUser.name = `${body.firstName} ${body.lastName}`;
+
     await this.userService.createUser(newUser);
 
     return this.login(body.email, body.password);
@@ -100,9 +132,9 @@ export class AuthService {
       throw new NotFoundException('USER_NOT_FOUND');
     }
 
-    const isTokenIdValid = await this.redisService.get(tokenId);
+    const isTokenIdInvalid = await this.redisService.get(tokenId);
 
-    if (!isTokenIdValid) {
+    if (isTokenIdInvalid) {
       throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
     }
 

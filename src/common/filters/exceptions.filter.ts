@@ -3,6 +3,7 @@ import {
   Catch,
   ExceptionFilter as _ExceptionFilter,
   HttpException,
+  HttpExceptionBody,
   HttpStatus,
   Logger,
   NotFoundException,
@@ -21,18 +22,19 @@ export class ExceptionsFilter implements _ExceptionFilter {
     let message: string;
     let statusCode: HttpStatus;
 
-    console.log('EXCEPTION: ', exception);
-
     if (exception instanceof NotFoundException) {
       statusCode = HttpStatus.NOT_FOUND;
       code = 'NOT_FOUND';
       message = 'Not Found';
     } else if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
-      code = exception['response']['errorCode']
-        ? exception['response']['errorCode']
-        : 'INTERNAL_SERVER_ERROR';
-      message = exception['response']['errorCode'];
+      const resp = exception.getResponse() as HttpExceptionBody & {
+        code: string;
+      };
+
+      // eslint-disable-next-line prefer-destructuring
+      code = resp.code;
+      message = resp.message as string;
     } else {
       statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
       code = 'INTERNAL_SERVER_ERROR';
