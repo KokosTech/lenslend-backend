@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { ValidationException } from './common/exceptions/validation.exception';
 import { useContainer } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
+import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,8 @@ async function bootstrap() {
       exceptionFactory: (errors) => new ValidationException(errors),
     }),
   );
+
+  app.useGlobalFilters(new PrismaClientExceptionFilter());
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
@@ -45,7 +48,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT');
-  await app.listen(process.env.PORT ?? 8080);
+  await app.listen(port ?? 8080);
 }
 
 bootstrap();
