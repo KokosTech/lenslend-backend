@@ -18,6 +18,22 @@ export class UserService {
     });
   }
 
+  async findByUsername(username: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        username,
+      },
+    });
+  }
+
+  async findByPhone(phone: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        phone,
+      },
+    });
+  }
+
   async findByUUID(uuid: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: {

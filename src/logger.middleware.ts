@@ -6,7 +6,7 @@ export class LoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Gets the request log
     console.log('req:', {
-      headers: req.headers,
+      // headers: req.headers,
       body: req.body,
       url: req.url,
     });

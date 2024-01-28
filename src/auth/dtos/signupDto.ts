@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class SingupDto {
+export class SignupOneDto {
   @Expose()
   @IsEmail()
   @IsNotEmpty()
@@ -38,12 +38,21 @@ export class SingupDto {
   @MinLength(8)
   @ApiProperty()
   confirmPassword: string;
+}
+
+@Exclude()
+export class SignupDto extends SignupOneDto {
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  firstName: string;
 
   @Expose()
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  name: string;
+  lastName: string;
 
   @Expose()
   @IsDateString()
@@ -52,7 +61,7 @@ export class SingupDto {
   dateOfBirth: string;
 
   @Expose()
-  @IsPhoneNumber()
+  @IsPhoneNumber('BG')
   @IsNotEmpty()
   @ApiProperty()
   phone: string;

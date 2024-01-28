@@ -25,7 +25,7 @@ const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: {
-        expiresIn: env.NODE_ENV === 'development' ? '7d' : '60s',
+        expiresIn: env.NODE_ENV === 'development' ? '7d' : '7d',
       },
     }),
   ],

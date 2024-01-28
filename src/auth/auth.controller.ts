@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 
@@ -17,11 +17,10 @@ import { AuthEntity } from './entities/auth.entity';
 import { BlacklistEntity } from './entities/blacklist.entity';
 
 import { LoginDto } from './dtos/login.dto';
-import { SingupDto } from './dtos/singup.dto';
-
+import { LogoutDto } from './dtos/logout.dto';
+import { SignupDto, SignupOneDto } from './dtos/signupDto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshJwtGuard } from './guards/refresh-jwt.guard';
-import { LogoutDto } from './dtos/logout.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -37,11 +36,21 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
+  @Post('validate/account')
+  async validateAccountData(@Body() body: SignupOneDto) {
+    return this.authService.validateSignup(body, 1);
+  }
+
+  @Post('validate/personal')
+  async validatePersonalData(@Body() body: SignupDto) {
+    return this.authService.validateSignup(body, 2);
+  }
+
   @Post('signup')
   @ApiOkResponse({
     type: AuthEntity,
   })
-  async signup(@Body() body: SingupDto) {
+  async signup(@Body() body: SignupDto) {
     return this.authService.signup(body);
   }
 
@@ -49,6 +58,8 @@ export class AuthController {
   @ApiOkResponse({
     type: AuthEntity,
   })
+  @ApiBearerAuth('refresh_token')
+  @UseGuards(RefreshJwtGuard)
   async logout(
     @Body()
     { accessToken, refreshToken }: LogoutDto,
