@@ -25,6 +25,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ExceptionsFilter } from './common/filters/exceptions.filter';
 import { ValidationExceptionFilter } from './common/filters/validation.filter';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exce
     TagModule,
     SearchModule,
     MailModule,
+    FileModule,
   ],
   controllers: [AppController, UserController],
   providers: [
