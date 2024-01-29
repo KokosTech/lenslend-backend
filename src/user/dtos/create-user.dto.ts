@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEmail,
   IsNotEmpty,
   IsPhoneNumber,
@@ -36,4 +37,9 @@ export class CreateUserDto {
   @IsPhoneNumber('BG')
   @IsNotEmpty()
   phone: string;
+
+  @Expose()
+  @IsDateString()
+  @IsNotEmpty()
+  date_of_birth: string;
 }

@@ -23,6 +23,7 @@ model User {
   profile_pic       String?
   header_pic        String?
   bio               String?
+  date_of_birth     DateTime            @default(now())
   verified_email    Boolean             @default(false)
   verified_phone    Boolean             @default(false)
   created_at        DateTime            @default(now())

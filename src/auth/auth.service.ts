@@ -114,6 +114,7 @@ export class AuthService {
 
     const newUser = plainToClass(CreateUserDto, body);
     newUser.name = `${body.firstName} ${body.lastName}`;
+    newUser.date_of_birth = new Date(body.dateOfBirth).toISOString();
 
     await this.userService.createUser(newUser);
 
