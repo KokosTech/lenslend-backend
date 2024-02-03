@@ -1,5 +1,11 @@
 import { ListingType, State, Status } from '@prisma/client';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateListingDto {
@@ -15,18 +21,21 @@ export class CreateListingDto {
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ enum: ListingType })
   type: ListingType;
 
+  @IsOptional()
   @IsNumber()
   @ApiProperty()
-  price?: number | null;
+  price?: number;
 
   @IsString()
-  @ApiProperty()
-  state?: State;
+  @ApiProperty({ enum: State })
+  state: State;
 
   @ApiProperty()
+  @IsOptional()
+  @IsNumber()
   rental?: number;
 
   @IsBoolean()
@@ -36,13 +45,23 @@ export class CreateListingDto {
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ enum: Status })
   status: Status;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
   categoryId: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  lat: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  lng: number;
 
   @IsString({
     each: true,

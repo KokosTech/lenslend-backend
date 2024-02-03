@@ -44,10 +44,10 @@ export class ListingController {
   }
 
   @Get()
-  // @ApiOkResponse({
-  //   description: 'List of all listings',
-  //   type: [ResponseListingDto],
-  // })
+  @ApiOkResponse({
+    description: 'List of all listings',
+    type: [ResponseListingDto],
+  })
   findAll() {
     return this.listingService.findAll();
   }

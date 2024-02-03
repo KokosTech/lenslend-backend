@@ -26,6 +26,7 @@ import { ExceptionsFilter } from './common/filters/exceptions.filter';
 import { ValidationExceptionFilter } from './common/filters/validation.filter';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { FileModule } from './file/file.module';
+import { ListingService } from './listing/listing.service';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { FileModule } from './file/file.module';
   providers: [
     AppService,
     MailService,
+    ListingService,
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,

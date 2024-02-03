@@ -3,7 +3,7 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListingSelect, ShortListingSelect } from './listing.select';
-import { User } from '@prisma/client';
+import { Status, User } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
 import { TagService } from '../tag/tag.service';
@@ -85,6 +85,21 @@ export class ListingService {
         uuid: id,
       },
       select: ListingSelect,
+    });
+  }
+
+  async getListingsByUsername(username: string, status?: Status) {
+    return this.prisma.listing.findMany({
+      where: {
+        user: {
+          username,
+        },
+        status,
+      },
+      select: ShortListingSelect,
+      orderBy: {
+        created_at: 'desc',
+      },
     });
   }
 

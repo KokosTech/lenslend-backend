@@ -40,4 +40,14 @@ export class Listing {
   @IsString()
   @IsNotEmpty()
   status?: Status;
+
+  @Expose()
+  @IsNumber()
+  @IsNotEmpty()
+  lat: number;
+
+  @Expose()
+  @IsNumber()
+  @IsNotEmpty()
+  lng: number;
 }
