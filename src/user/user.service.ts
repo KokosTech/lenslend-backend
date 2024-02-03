@@ -3,12 +3,21 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { User } from '@prisma/client';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { hash } from 'bcrypt';
+import {
+  ResponseProfileDto,
+  ResponsePublicProfileDto,
+} from './dtos/response-user.dto';
+import { plainToClass } from 'class-transformer';
 
 export const roundsOfHashing = 10;
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
+
+  async findAll(): Promise<User[]> {
+    return this.prisma.user.findMany();
+  }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -80,5 +89,28 @@ export class UserService {
     return this.prisma.user.create({
       data: user,
     });
+  }
+
+  async getUserProfile(uuid: string): Promise<ResponseProfileDto> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        uuid,
+      },
+    });
+
+    return plainToClass(ResponseProfileDto, user);
+  }
+
+  async getPublicProfile(username: string): Promise<ResponsePublicProfileDto> {
+    console.log('username', username);
+    return plainToClass(
+      ResponsePublicProfileDto,
+      await this.findByUsername(username),
+    );
+  }
+
+  async getPublicProfiles(): Promise<ResponsePublicProfileDto[]> {
+    const users = await this.prisma.user.findMany();
+    return plainToClass(ResponsePublicProfileDto, users);
   }
 }
