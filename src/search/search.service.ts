@@ -66,7 +66,7 @@ export class SearchService {
     return this.prisma.user.findMany({
       orderBy: {
         _relevance: {
-          fields: ['name', 'bio'],
+          fields: ['username', 'name', 'bio'],
           search: query,
           sort: 'desc',
         },

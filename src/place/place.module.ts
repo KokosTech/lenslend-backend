@@ -10,5 +10,6 @@ import { ServiceModule } from './service/service.module';
   controllers: [PlaceController],
   providers: [PlaceService],
   imports: [ReportModule, ReviewModule, PrismaModule, ServiceModule],
+  exports: [PlaceService],
 })
 export class PlaceModule {}

@@ -18,6 +18,8 @@ import { jwtConstants } from './constants';
 import { SignupDto, SignupOneDto } from './dtos/signupDto';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
 import { RefreshTokenInterface } from './interfaces/refreshToken.interface';
+import { User } from '@prisma/client';
+import { AuthTokenInterface } from './interfaces/authToken.interface';
 
 @Injectable()
 export class AuthService {
@@ -175,5 +177,24 @@ export class AuthService {
 
   async getBlockedTokens() {
     return this.redisService.getAll();
+  }
+
+  async getUserFromToken(token: string | null): Promise<User | null> {
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const { id }: AuthTokenInterface = await this.jwtService.verifyAsync(
+        token,
+        {
+          secret: jwtConstants.secret,
+        },
+      );
+
+      return this.userService.findByUUID(id);
+    } catch {
+      return null;
+    }
   }
 }

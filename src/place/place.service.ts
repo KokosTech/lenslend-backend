@@ -3,6 +3,7 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CardPlaceSelect, PlaceSelect, ShortPlaceSelect } from './place.select';
+import { ResourceContent } from '../resource/resource.type';
 
 @Injectable()
 export class PlaceService {
@@ -35,6 +36,27 @@ export class PlaceService {
     if (!place) throw new NotFoundException('Place not found');
 
     return place;
+  }
+
+  async findOneMeta(uuid: string): Promise<ResourceContent | null> {
+    const place = await this.prisma.place.findUnique({
+      where: {
+        uuid,
+      },
+      select: {
+        uuid: true,
+        status: true,
+        creatorUuid: true,
+      },
+    });
+
+    if (!place) return null;
+
+    return {
+      uuid: place.uuid,
+      ownerId: place.creatorUuid,
+      status: place.status,
+    };
   }
 
   update(id: number, updatePlaceDto: UpdatePlaceDto) {
