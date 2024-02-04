@@ -23,7 +23,7 @@ import { ResponseListingDto } from './dto/response-listing.dto';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 import { Resource } from '../auth/decorators/resource.decorator';
 import { Action } from '../auth/decorators/action.decorator';
-import { OwnerGuard } from '../auth/guards/owner.guard';
+import { PermissionsGuard } from '../auth/guards/permissions-guard.service';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -56,7 +56,7 @@ export class ListingController {
   @Get(':uuid')
   @Action('view')
   @Resource('listing')
-  @UseGuards(OwnerGuard)
+  @UseGuards(PermissionsGuard)
   @ApiBearerAuth()
   @ApiParam({
     name: 'uuid',
@@ -83,7 +83,7 @@ export class ListingController {
   @Patch(':uuid')
   @Resource('listing')
   @Action('manage')
-  @UseGuards(JwtAuthGuard, OwnerGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   update(
     @Param('uuid') uuid: string,

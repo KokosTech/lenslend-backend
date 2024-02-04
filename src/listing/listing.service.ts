@@ -7,6 +7,7 @@ import { Status, User } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
 import { TagService } from '../tag/tag.service';
+import { ResourceContent } from '../resource/resource.type';
 
 @Injectable()
 export class ListingService {
@@ -88,10 +89,7 @@ export class ListingService {
     });
   }
 
-  async findOneMeta(id: string): Promise<{
-    ownerId: string;
-    status: Status;
-  } | null> {
+  async findOneMeta(id: string): Promise<ResourceContent | null> {
     const listingMeta = await this.prisma.listing.findUnique({
       where: {
         uuid: id,
@@ -106,6 +104,7 @@ export class ListingService {
     if (!listingMeta) return null;
 
     return {
+      uuid: listingMeta.uuid,
       ownerId: listingMeta.user_uuid,
       status: listingMeta.status,
     };

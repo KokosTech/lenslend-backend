@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { RedisModule } from '../redis/redis.module';
@@ -14,38 +14,35 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 
 import { jwtConstants } from './constants';
+import { PermissionsGuard } from './guards/permissions-guard.service';
+import { ResourceModule } from '../resource/resource.module';
 import { ListingModule } from '../listing/listing.module';
-import { PlaceModule } from '../place/place.module';
-import { CommentModule } from '../listing/comment/comment.module';
-import { OwnerGuard } from './guards/owner.guard';
-import { ReviewModule } from '../place/review/review.module';
 
 const passportModule = PassportModule.register({ defaultStrategy: 'jwt' });
 
 @Module({
   imports: [
     RedisModule,
-    UserModule,
+    forwardRef(() => UserModule),
+    forwardRef(() => ListingModule),
     PassportModule,
+    ResourceModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: {
         expiresIn: env.NODE_ENV === 'development' ? '7d' : '7d',
       },
     }),
-    ListingModule,
-    PlaceModule,
-    CommentModule,
-    ReviewModule,
   ],
   providers: [
     AuthService,
     LocalStrategy,
     JwtStrategy,
     RefreshJwtStrategy,
-    OwnerGuard,
+    PermissionsGuard,
+    ResourceModule,
   ],
   controllers: [AuthController],
-  exports: [passportModule],
+  exports: [passportModule, AuthService],
 })
 export class AuthModule {}

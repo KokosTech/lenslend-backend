@@ -12,8 +12,6 @@ export class CommentService {
     listingUuid: string,
     createCommentDto: CreateCommentDto,
   ) {
-    // get user from jwt guard
-
     return this.prisma.listingComment.create({
       data: {
         content: createCommentDto.content,
@@ -66,25 +64,24 @@ export class CommentService {
     });
   }
 
-  async findOneMeta(uuid: string): Promise<{
-    ownerId: string;
-  } | null> {
-    const comment = await this.prisma.listingComment.findUnique({
-      where: {
-        uuid,
-      },
-      select: {
-        uuid: true,
-        user_uuid: true,
-      },
-    });
-
-    if (!comment) return null;
-
-    return {
-      ownerId: comment.user_uuid,
-    };
-  }
+  // async findOneMeta(uuid: string): Promise<ResourceContent | null> {
+  //   const comment = await this.prisma.listingComment.findUnique({
+  //     where: {
+  //       uuid,
+  //     },
+  //     select: {
+  //       uuid: true,
+  //       user_uuid: true,
+  //     },
+  //   });
+  //
+  //   if (!comment) return null;
+  //
+  //   return {
+  //     uuid: comment.uuid,
+  //     ownerId: comment.user_uuid,
+  //   };
+  // }
 
   update(id: number, updateCommentDto: UpdateCommentDto) {
     return `This action updates a #${id} comment`;

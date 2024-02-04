@@ -33,6 +33,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { PlaceService } from './place/place.service';
 import { CommentService } from './listing/comment/comment.service';
 import { ReviewService } from './place/review/review.service';
+import { ResourceService } from './resource/resource.service';
+import { ResourceModule } from './resource/resource.module';
 
 @Module({
   imports: [
@@ -51,6 +53,7 @@ import { ReviewService } from './place/review/review.service';
     MailModule,
     FileModule,
     JwtModule,
+    ResourceModule,
   ],
   controllers: [AppController, UserController],
   providers: [
@@ -80,6 +83,7 @@ import { ReviewService } from './place/review/review.service';
       provide: APP_FILTER,
       useClass: PrismaClientExceptionFilter,
     },
+    ResourceService,
   ],
 })
 export class AppModule implements NestModule {

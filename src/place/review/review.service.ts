@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Status } from '@prisma/client';
+import { ResourceContent } from '../../resource/resource.type';
 
 @Injectable()
 export class ReviewService {
@@ -45,10 +45,7 @@ export class ReviewService {
     });
   }
 
-  async findOneMeta(uuid: string): Promise<{
-    ownerId: string;
-    status: Status;
-  } | null> {
+  async findOneMeta(uuid: string): Promise<ResourceContent | null> {
     const review = await this.prisma.placeReview.findUnique({
       where: {
         uuid,
@@ -63,6 +60,7 @@ export class ReviewService {
     if (!review) return null;
 
     return {
+      uuid: review.uuid,
       ownerId: review.userUuid,
       status: review.status,
     };
