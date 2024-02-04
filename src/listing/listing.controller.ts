@@ -21,8 +21,9 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResponseListingDto } from './dto/response-listing.dto';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
-import { RoleGuard } from '../auth/guards/role.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { Resource } from '../auth/decorators/resource.decorator';
+import { Action } from '../auth/decorators/action.decorator';
+import { OwnerGuard } from '../auth/guards/owner.guard';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -52,44 +53,48 @@ export class ListingController {
     return this.listingService.findAll();
   }
 
-  @Get(':id')
+  @Get(':uuid')
+  @Action('view')
+  @Resource('listing')
+  @UseGuards(OwnerGuard)
+  @ApiBearerAuth()
   @ApiParam({
-    name: 'id',
+    name: 'uuid',
     type: String,
   })
   @ApiOkResponse({
-    description: 'Get a listing by id',
+    description: 'Get a listing by uuid',
     type: ResponseListingDto,
   })
-  findOne(@Param('id') id: string) {
-    return this.listingService.findOne(id);
+  findOne(@Param('uuid') uuid: string) {
+    return this.listingService.findOne(uuid);
   }
 
-  @Post(':id/rate')
+  @Post(':uuid/rate')
   rate() {
     return 'Not implemented';
   }
 
-  @Post(':id/save')
+  @Post(':uuid/save')
   save() {
     return 'Not implemented';
   }
 
-  @Patch(':id')
-  @Roles('ADMIN', 'USER')
-  @UseGuards(JwtAuthGuard, RoleGuard)
-  @UseGuards()
+  @Patch(':uuid')
+  @Resource('listing')
+  @Action('manage')
+  @UseGuards(JwtAuthGuard, OwnerGuard)
   @ApiBearerAuth()
   update(
-    @Param('id') id: string,
+    @Param('uuid') uuid: string,
     @Req() req: RequestWithUser,
     @Body() updateListingDto: UpdateListingDto,
   ) {
-    return this.listingService.update(id, req.user, updateListingDto);
+    return this.listingService.update(uuid, req.user, updateListingDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.listingService.remove(id);
+  @Delete(':uuid')
+  remove(@Param('uuid') uuid: string) {
+    return this.listingService.remove(uuid);
   }
 }
