@@ -12,8 +12,6 @@ export class CommentService {
     listingUuid: string,
     createCommentDto: CreateCommentDto,
   ) {
-    // get user from jwt guard
-
     return this.prisma.listingComment.create({
       data: {
         content: createCommentDto.content,
@@ -58,9 +56,32 @@ export class CommentService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
+  findOne(uuid: string) {
+    return this.prisma.listingComment.findUnique({
+      where: {
+        uuid,
+      },
+    });
   }
+
+  // async findOneMeta(uuid: string): Promise<ResourceContent | null> {
+  //   const comment = await this.prisma.listingComment.findUnique({
+  //     where: {
+  //       uuid,
+  //     },
+  //     select: {
+  //       uuid: true,
+  //       user_uuid: true,
+  //     },
+  //   });
+  //
+  //   if (!comment) return null;
+  //
+  //   return {
+  //     uuid: comment.uuid,
+  //     ownerId: comment.user_uuid,
+  //   };
+  // }
 
   update(id: number, updateCommentDto: UpdateCommentDto) {
     return `This action updates a #${id} comment`;

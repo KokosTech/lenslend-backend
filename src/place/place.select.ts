@@ -69,6 +69,9 @@ export const PlaceSelect = createSelect<Prisma.PlaceSelect>({
       url: true,
       alt: true,
     },
+    orderBy: {
+      order: 'asc',
+    },
   },
   services: {
     select: {

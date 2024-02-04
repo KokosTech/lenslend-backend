@@ -8,6 +8,7 @@ export class SearchService {
   constructor(private readonly prisma: PrismaService) {}
 
   async searchAll(query: string) {
+    query = query.split(' ').join(' & ');
     const [listings, places, users] = await Promise.all([
       this.searchListings(query, 6),
       this.searchPlaces(query, 6),
@@ -43,6 +44,13 @@ export class SearchService {
       where: {
         status: Status.PUBLIC,
       },
+      include: {
+        images: {
+          where: {
+            order: 1,
+          },
+        },
+      },
       orderBy: {
         _relevance: {
           fields: ['name', 'description'],
@@ -58,7 +66,7 @@ export class SearchService {
     return this.prisma.user.findMany({
       orderBy: {
         _relevance: {
-          fields: ['name', 'bio'],
+          fields: ['username', 'name', 'bio'],
           search: query,
           sort: 'desc',
         },
