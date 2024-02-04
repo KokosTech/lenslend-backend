@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class ReviewService {
@@ -36,8 +37,35 @@ export class ReviewService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} review`;
+  findOne(uuid: string) {
+    return this.prisma.placeReview.findUnique({
+      where: {
+        uuid,
+      },
+    });
+  }
+
+  async findOneMeta(uuid: string): Promise<{
+    ownerId: string;
+    status: Status;
+  } | null> {
+    const review = await this.prisma.placeReview.findUnique({
+      where: {
+        uuid,
+      },
+      select: {
+        uuid: true,
+        status: true,
+        userUuid: true,
+      },
+    });
+
+    if (!review) return null;
+
+    return {
+      ownerId: review.userUuid,
+      status: review.status,
+    };
   }
 
   update(id: number, updateReviewDto: UpdateReviewDto) {

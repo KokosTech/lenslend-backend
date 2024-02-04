@@ -58,8 +58,32 @@ export class CommentService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
+  findOne(uuid: string) {
+    return this.prisma.listingComment.findUnique({
+      where: {
+        uuid,
+      },
+    });
+  }
+
+  async findOneMeta(uuid: string): Promise<{
+    ownerId: string;
+  } | null> {
+    const comment = await this.prisma.listingComment.findUnique({
+      where: {
+        uuid,
+      },
+      select: {
+        uuid: true,
+        user_uuid: true,
+      },
+    });
+
+    if (!comment) return null;
+
+    return {
+      ownerId: comment.user_uuid,
+    };
   }
 
   update(id: number, updateCommentDto: UpdateCommentDto) {

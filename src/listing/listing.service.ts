@@ -88,6 +88,29 @@ export class ListingService {
     });
   }
 
+  async findOneMeta(id: string): Promise<{
+    ownerId: string;
+    status: Status;
+  } | null> {
+    const listingMeta = await this.prisma.listing.findUnique({
+      where: {
+        uuid: id,
+      },
+      select: {
+        uuid: true,
+        status: true,
+        user_uuid: true,
+      },
+    });
+
+    if (!listingMeta) return null;
+
+    return {
+      ownerId: listingMeta.user_uuid,
+      status: listingMeta.status,
+    };
+  }
+
   async getListingsByUsername(username: string, status?: Status) {
     return this.prisma.listing.findMany({
       where: {
