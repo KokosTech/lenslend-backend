@@ -15,6 +15,9 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../../common/interfaces/RequestWithUser';
+import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
+import { Resource } from '../../auth/decorators/resource.decorator';
+import { Action } from '../../auth/decorators/action.decorator';
 
 @ApiTags('listing/comment')
 @Controller('listing/:uuid/comment')
@@ -32,6 +35,9 @@ export class CommentController {
   }
 
   @Get()
+  @Action('view')
+  @Resource('listing')
+  @UseGuards(PermissionsGuard)
   findAll(@Param('uuid') uuid: string) {
     return this.commentService.findAll(uuid);
   }
