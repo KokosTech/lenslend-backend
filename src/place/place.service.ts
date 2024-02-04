@@ -1,16 +1,83 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CardPlaceSelect, PlaceSelect, ShortPlaceSelect } from './place.select';
 import { ResourceContent } from '../resource/resource.type';
+import { plainToClass } from 'class-transformer';
+import { User } from '@prisma/client';
+import { Place } from './entities/place.entity';
 
 @Injectable()
 export class PlaceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createPlaceDto: CreatePlaceDto) {
-    return 'This action adds a new place';
+  async create(user: User, createPlaceDto: CreatePlaceDto) {
+    const { uuid } = user;
+    const { categoryUuid, tags, images, services } = createPlaceDto;
+
+    const category = await this.prisma.placeCategory.findUnique({
+      where: {
+        uuid: categoryUuid,
+      },
+    });
+
+    if (!category) {
+      throw new BadRequestException('CATEGORY_NOT_FOUND');
+    }
+
+    const placeEntity = plainToClass(Place, createPlaceDto);
+
+    return this.prisma.place.create({
+      data: {
+        ...placeEntity,
+        creator: {
+          connect: {
+            uuid,
+          },
+        },
+        category: {
+          connect: {
+            uuid: categoryUuid,
+          },
+        },
+        images: {
+          create: images.map((image, i) => ({
+            url: image,
+            alt: image,
+            order: i + 1,
+          })),
+        },
+        tags: {
+          create: tags.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  name: tag,
+                },
+                create: {
+                  name: tag,
+                },
+              },
+            },
+          })),
+        },
+        services: {
+          create: services.map((service) => ({
+            service: {
+              connect: {
+                uuid: service,
+              },
+            },
+          })),
+        },
+      },
+      select: PlaceSelect,
+    });
   }
 
   async findAll(format?: 'short' | 'card') {

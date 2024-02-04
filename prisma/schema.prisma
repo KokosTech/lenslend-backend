@@ -198,8 +198,8 @@ model Place {
   status       Status         @default(PUBLIC)
   creatorUuid  String
   creator      User           @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
-  ownerUuid    String
-  owner        User           @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
+  ownerUuid    String?
+  owner        User?          @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
   created_at   DateTime       @default(now())
   updated_at   DateTime       @updatedAt
   deleted_at   DateTime?

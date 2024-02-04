@@ -7,10 +7,14 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { PlaceService } from './place.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { RequestWithUser } from '../common/interfaces/RequestWithUser';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('place')
 @Controller('place')
@@ -18,8 +22,13 @@ export class PlaceController {
   constructor(private readonly placeService: PlaceService) {}
 
   @Post()
-  create(@Body() createPlaceDto: CreatePlaceDto) {
-    return this.placeService.create(createPlaceDto);
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @Req() req: RequestWithUser,
+    @Body() createPlaceDto: CreatePlaceDto,
+  ) {
+    return this.placeService.create(req.user, createPlaceDto);
   }
 
   @Get()

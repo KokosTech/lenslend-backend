@@ -50,7 +50,16 @@ export class CreatePlaceDto {
   @IsEnum(['PUBLIC', 'PRIVATE'])
   @IsNotEmpty()
   status: Status;
+
+  @ApiProperty()
+  @IsString({ each: true })
   services: string[];
+
+  @ApiProperty()
+  @IsString({ each: true })
   images: string[];
+
+  @ApiProperty()
+  @IsString({ each: true })
   tags: string[];
 }
