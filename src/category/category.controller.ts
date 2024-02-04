@@ -15,13 +15,16 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('category')
 @Controller('category/:type')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
   @Roles(Role.ADMIN)
+  @ApiTags('admin')
   @UseGuards(JwtAuthGuard, RoleGuard)
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
@@ -47,6 +50,8 @@ export class CategoryController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
+  @ApiTags('admin')
   remove(@Param('type') type: 'LISTING' | 'PLACE', @Param('id') id: string) {
     return this.categoryService.remove(id, type);
   }

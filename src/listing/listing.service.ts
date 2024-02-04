@@ -48,7 +48,7 @@ export class ListingService {
           create: images.map((image, i) => ({
             url: image,
             alt: image,
-            order: i,
+            order: i + 1,
           })),
         },
         tags: {
