@@ -27,6 +27,12 @@ import { ValidationExceptionFilter } from './common/filters/validation.filter';
 import { PrismaClientExceptionFilter } from './common/filters/prisma-client-exception.filter';
 import { FileModule } from './file/file.module';
 import { ListingService } from './listing/listing.service';
+import { ReviewModule } from './place/review/review.module';
+import { CommentModule } from './listing/comment/comment.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PlaceService } from './place/place.service';
+import { CommentService } from './listing/comment/comment.service';
+import { ReviewService } from './place/review/review.service';
 
 @Module({
   imports: [
@@ -38,16 +44,22 @@ import { ListingService } from './listing/listing.service';
     PlaceModule,
     ChatModule,
     CategoryModule,
+    CommentModule,
+    ReviewModule,
     TagModule,
     SearchModule,
     MailModule,
     FileModule,
+    JwtModule,
   ],
   controllers: [AppController, UserController],
   providers: [
     AppService,
     MailService,
     ListingService,
+    PlaceService,
+    CommentService,
+    ReviewService,
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,

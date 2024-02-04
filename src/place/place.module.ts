@@ -9,5 +9,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   controllers: [PlaceController],
   providers: [PlaceService],
   imports: [ReportModule, ReviewModule, PrismaModule],
+  exports: [PlaceService],
 })
 export class PlaceModule {}

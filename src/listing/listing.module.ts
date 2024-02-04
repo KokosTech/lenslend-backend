@@ -6,6 +6,9 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { CommentModule } from './comment/comment.module';
 import { ReportModule } from './report/report.module';
 import { TagModule } from '../tag/tag.module';
+import { PlaceModule } from '../place/place.module';
+import { ReviewModule } from '../place/review/review.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -14,8 +17,12 @@ import { TagModule } from '../tag/tag.module';
     CommentModule,
     ReportModule,
     TagModule,
+    PlaceModule,
+    ReviewModule,
+    JwtModule,
   ],
   controllers: [ListingController],
   providers: [ListingService],
+  exports: [ListingService],
 })
 export class ListingModule {}
