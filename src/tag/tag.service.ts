@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { ResponseTagDto } from './dto/response-tag.dto';
 
 @Injectable()
 export class TagService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createOrFind(createTagDto: CreateTagDto) {
+  async createOrFind(createTagDto: CreateTagDto): Promise<ResponseTagDto> {
     const foundTag = await this.prisma.tag.findUnique({
       where: {
         name: createTagDto.name,
@@ -21,29 +22,24 @@ export class TagService {
         },
       });
 
-      return newTag.uuid;
+      return plainToClass(ResponseTagDto, newTag);
     }
 
-    return foundTag.uuid;
+    return plainToClass(ResponseTagDto, foundTag);
   }
 
-  findAll() {
-    return 'This action returns all tag';
+  async findAll(): Promise<ResponseTagDto[]> {
+    const tags = await this.prisma.tag.findMany();
+    return plainToInstance(ResponseTagDto, tags);
   }
 
-  findOne(name: string) {
-    return this.prisma.tag.findUnique({
+  async findOne(name: string) {
+    const tag = await this.prisma.tag.findUnique({
       where: {
         name,
       },
     });
-  }
 
-  update(id: number, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} tag`;
+    return plainToClass(ResponseTagDto, tag);
   }
 }

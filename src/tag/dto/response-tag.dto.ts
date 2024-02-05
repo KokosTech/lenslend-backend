@@ -1,13 +1,13 @@
 import { Exclude, Expose } from 'class-transformer';
-import { IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Exclude()
-export class CreateTagDto {
+export class ResponseTagDto {
   @Expose()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(20)
+  @ApiProperty()
+  uuid: string;
+
+  @Expose()
   @ApiProperty()
   name: string;
 }
