@@ -43,6 +43,10 @@ export class UserController {
   }
 
   @Get('profile')
+  @ApiResponse({
+    status: 200,
+    type: [ResponsePublicProfileDto],
+  })
   async getProfiles(): Promise<ResponsePublicProfileDto[]> {
     return this.userService.getPublicProfiles();
   }

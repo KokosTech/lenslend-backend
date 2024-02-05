@@ -5,6 +5,8 @@ import {
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -21,7 +23,11 @@ export class SignupOneDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(3)
+  @MaxLength(16)
+  @Matches(/^[a-z0-9._]+$/, {
+    message: 'username.invalid_characters',
+  })
   @ApiProperty()
   username: string;
 
@@ -45,12 +51,14 @@ export class SignupDto extends SignupOneDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   @ApiProperty()
   firstName: string;
 
   @Expose()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   @ApiProperty()
   lastName: string;
 
