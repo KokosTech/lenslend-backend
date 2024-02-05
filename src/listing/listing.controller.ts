@@ -14,6 +14,7 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -24,6 +25,9 @@ import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 import { Resource } from '../auth/decorators/resource.decorator';
 import { Action } from '../auth/decorators/action.decorator';
 import { PermissionsGuard } from '../auth/guards/permissions-guard.service';
+import { ResponseShortListingDto } from './dto/response-short-listing.dto';
+import { RateListingDto } from './dto/rate-listing.dto';
+import { ResponseSavedDto } from './dto/response-saved.dto';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -33,23 +37,27 @@ export class ListingController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiBody({
+    type: CreateListingDto,
+  })
   @ApiOkResponse({
     description: 'Create a new listing',
     type: ResponseListingDto,
+    status: 201,
   })
   async create(
     @Req() req: RequestWithUser,
     @Body() createListingDto: CreateListingDto,
-  ) {
+  ): Promise<ResponseListingDto> {
     return this.listingService.create(req.user, createListingDto);
   }
 
   @Get()
   @ApiOkResponse({
-    description: 'List of all listings',
-    type: [ResponseListingDto],
+    description: 'Get all listings',
+    type: [ResponseShortListingDto],
   })
-  findAll() {
+  async findAll(): Promise<ResponseShortListingDto[]> {
     return this.listingService.findAll();
   }
 
@@ -66,18 +74,54 @@ export class ListingController {
     description: 'Get a listing by uuid',
     type: ResponseListingDto,
   })
-  findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid') uuid: string): Promise<ResponseListingDto> {
     return this.listingService.findOne(uuid);
   }
 
   @Post(':uuid/rate')
-  rate() {
-    return 'Not implemented';
+  @Action('view')
+  @Resource('listing')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'uuid',
+    type: String,
+  })
+  @ApiBody({
+    type: RateListingDto,
+  })
+  @ApiOkResponse({
+    description: 'Rate a listing',
+    type: RateListingDto,
+    status: 201,
+  })
+  async rate(
+    @Req() req: RequestWithUser,
+    @Param('uuid') uuid: string,
+    @Body() rateListingDto: RateListingDto,
+  ): Promise<RateListingDto> {
+    return this.listingService.rate(uuid, req.user.uuid, rateListingDto);
   }
 
   @Post(':uuid/save')
-  save() {
-    return 'Not implemented';
+  @Action('view')
+  @Resource('listing')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'uuid',
+    type: String,
+  })
+  @ApiOkResponse({
+    description: 'Rate a listing',
+    type: ResponseSavedDto,
+    status: 201,
+  })
+  async save(
+    @Param('uuid') uuid: string,
+    @Req() req: RequestWithUser,
+  ): Promise<ResponseSavedDto> {
+    return this.listingService.save(uuid, req.user.uuid);
   }
 
   @Patch(':uuid')
@@ -85,16 +129,40 @@ export class ListingController {
   @Action('manage')
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
-  update(
+  @ApiParam({
+    name: 'uuid',
+    type: String,
+  })
+  @ApiBody({
+    type: UpdateListingDto,
+  })
+  @ApiOkResponse({
+    description: 'Update a listing by uuid',
+    type: ResponseListingDto,
+    status: 200,
+  })
+  async update(
     @Param('uuid') uuid: string,
     @Req() req: RequestWithUser,
     @Body() updateListingDto: UpdateListingDto,
-  ) {
-    return this.listingService.update(uuid, req.user, updateListingDto);
+  ): Promise<ResponseListingDto> {
+    return this.listingService.update(uuid, req.user.uuid, updateListingDto);
   }
 
   @Delete(':uuid')
-  remove(@Param('uuid') uuid: string) {
+  @Resource('listing')
+  @Action('manage')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'uuid',
+    type: String,
+  })
+  @ApiOkResponse({
+    description: 'Delete a listing by uuid',
+    status: 204,
+  })
+  async remove(@Param('uuid') uuid: string) {
     return this.listingService.remove(uuid);
   }
 }

@@ -39,7 +39,7 @@ export class UserController {
     type: [ResponseListingDto],
   })
   async getMyListings(@Req() req: RequestWithUser) {
-    return this.listingService.getListingsByUsername(req.user.username);
+    return this.listingService.findOneByUsername(req.user.username);
   }
 
   @Get('profile')
@@ -68,7 +68,7 @@ export class UserController {
     type: [ResponseListingDto],
   })
   async getProfileListings(@Param('username') username: string) {
-    return this.listingService.getListingsByUsername(username, Status.PUBLIC);
+    return this.listingService.findOneByUsername(username, Status.PUBLIC);
   }
 
   @Get()

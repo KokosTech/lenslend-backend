@@ -1,13 +1,14 @@
-import { ListingType, State, Status } from '@prisma/client';
+import { PartialType } from '@nestjs/mapped-types';
+import { ResponseListingDto } from './response-listing.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose } from 'class-transformer';
+import { ListingType, State, Status } from '@prisma/client';
 import { ResponseCategoryDto } from '../../category/dto/response-category.dto';
-import { ResponseMetaUserDto } from '../../user/dtos/response-meta-user.dto';
+import { Exclude, Expose } from 'class-transformer';
+import { ResponseShortMetaUserDto } from '../../user/dtos/response-short-meta-user.dto';
 import { ImageDto } from '../../common/dtos/image.dto';
-import { ResponseTagDto } from '../../tag/dto/response-tag.dto';
 
 @Exclude()
-export class ResponseListingDto {
+export class ResponseShortListingDto extends PartialType(ResponseListingDto) {
   @Expose()
   @ApiProperty()
   uuid: string;
@@ -15,10 +16,6 @@ export class ResponseListingDto {
   @Expose()
   @ApiProperty()
   title: string;
-
-  @Expose()
-  @ApiProperty()
-  description: string;
 
   @Expose()
   @ApiProperty()
@@ -72,29 +69,25 @@ export class ResponseListingDto {
 
   @Expose()
   @ApiProperty({
+    type: ResponseShortMetaUserDto,
+  })
+  user: ResponseShortMetaUserDto;
+
+  @Expose()
+  @ApiProperty({
     type: ImageDto,
-    isArray: true,
   })
-  images: ImageDto[];
+  thumbnail: ImageDto;
 
   @Expose()
   @ApiProperty({
-    type: ResponseMetaUserDto,
+    type: Date,
   })
-  user: ResponseMetaUserDto;
-
-  @Expose()
-  @ApiProperty({
-    type: ResponseTagDto,
-    isArray: true,
-  })
-  tags: ResponseTagDto[];
-
-  @Expose()
-  @ApiProperty()
   created_at: Date;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+  })
   updated_at: Date;
 }

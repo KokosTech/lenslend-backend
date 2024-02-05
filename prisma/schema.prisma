@@ -330,7 +330,7 @@ model PlaceReport {
   placeUuid  String
 }
 
-// =============== Chat Models =============== -> MQTT Chat
+// =============== Chat Models ===============
 
 model Chat {
   uuid       String    @id @default(uuid())

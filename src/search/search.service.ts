@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Status } from '@prisma/client';
-import { ListingSelect } from '../listing/listing.select';
+import { ListingSelect } from '../listing/selects/listing.select';
 
 @Injectable()
 export class SearchService {
