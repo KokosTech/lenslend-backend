@@ -8,8 +8,27 @@ import { ResourceContent } from '../../resource/resource.type';
 export class ReviewService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createReviewDto: CreateReviewDto) {
-    return 'This action adds a new review';
+  async create(
+    userUuid: string,
+    placeUuid: string,
+    createReviewDto: CreateReviewDto,
+  ) {
+    return this.prisma.placeReview.create({
+      data: {
+        content: createReviewDto.content ?? null,
+        rating: createReviewDto.rating,
+        user: {
+          connect: {
+            uuid: userUuid,
+          },
+        },
+        place: {
+          connect: {
+            uuid: placeUuid,
+          },
+        },
+      },
+    });
   }
 
   findAll(uuid: string) {
@@ -37,10 +56,36 @@ export class ReviewService {
     });
   }
 
-  findOne(uuid: string) {
+  async findOne(uuid: string) {
     return this.prisma.placeReview.findUnique({
       where: {
         uuid,
+      },
+    });
+  }
+
+  async findOneUserReview(userUuid: string, placeUuid: string) {
+    return this.prisma.placeReview.findUniqueOrThrow({
+      select: {
+        uuid: true,
+        content: true,
+        rating: true,
+        created_at: true,
+        updated_at: true,
+        user: {
+          select: {
+            uuid: true,
+            name: true,
+            username: true,
+            profile_pic: true,
+          },
+        },
+      },
+      where: {
+        placeUuid_userUuid: {
+          userUuid,
+          placeUuid,
+        },
       },
     });
   }

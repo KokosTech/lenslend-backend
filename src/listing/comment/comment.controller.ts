@@ -12,7 +12,12 @@ import {
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiProperty,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../../common/interfaces/RequestWithUser';
 import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
@@ -26,7 +31,10 @@ export class CommentController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(
+  @ApiBearerAuth()
+  @ApiProperty({ type: CreateCommentDto })
+  @ApiResponse({ status: 201 })
+  async create(
     @Req() req: RequestWithUser,
     @Body() createCommentDto: CreateCommentDto,
     @Param('uuid') uuid: string,

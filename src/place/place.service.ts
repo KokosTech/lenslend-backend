@@ -11,6 +11,7 @@ import { ResourceContent } from '../resource/resource.type';
 import { plainToClass } from 'class-transformer';
 import { User } from '@prisma/client';
 import { Place } from './entities/place.entity';
+import { ResponsePlaceDto } from './dto/response-place.dto';
 
 @Injectable()
 export class PlaceService {
@@ -92,7 +93,7 @@ export class PlaceService {
     return places;
   }
 
-  async findOne(uuid: string) {
+  async findOne(uuid: string): Promise<ResponsePlaceDto> {
     const place = await this.prisma.place.findUnique({
       where: {
         uuid,
@@ -101,8 +102,27 @@ export class PlaceService {
     });
 
     if (!place) throw new NotFoundException('Place not found');
+    const averageRating = await this.prisma.placeReview.aggregate({
+      where: {
+        placeUuid: uuid,
+      },
+      _avg: {
+        rating: true,
+      },
+    });
 
-    return place;
+    let rounded = 0;
+
+    // eslint-disable-next-line no-underscore-dangle
+    if (averageRating._avg.rating) {
+      // eslint-disable-next-line no-underscore-dangle
+      rounded = Math.round(averageRating._avg.rating * 10) / 10;
+    }
+
+    return plainToClass(ResponsePlaceDto, {
+      ...place,
+      rating: rounded,
+    });
   }
 
   async findOneMeta(uuid: string): Promise<ResourceContent | null> {

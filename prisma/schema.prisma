@@ -69,6 +69,8 @@ model UserSavedListings {
   user_uuid    String
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
+
+  @@unique([user_uuid, listing_uuid])
 }
 
 // =============== Listing Models ===============
@@ -171,6 +173,8 @@ model ListingRating {
   user_uuid    String
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
+
+  @@unique([user_uuid, listing_uuid])
 }
 
 model ListingReport {
@@ -281,12 +285,14 @@ model PlaceVisitor {
   userUuid   String
   place      Place     @relation("PlaceVisitors", fields: [placeUuid], references: [uuid])
   placeUuid  String
+
+  @@unique([placeUuid, userUuid])
 }
 
 model PlaceReview {
   uuid             String             @id @default(uuid())
   rating           Int
-  content          String
+  content          String?
   status           Status             @default(PUBLIC)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
@@ -296,6 +302,8 @@ model PlaceReview {
   place            Place              @relation(fields: [placeUuid], references: [uuid])
   placeUuid        String
   PlaceReviewReply PlaceReviewReply[]
+
+  @@unique([placeUuid, userUuid])
 }
 
 model PlaceReviewReply {

@@ -12,9 +12,10 @@ import {
 } from '@nestjs/common';
 import { PlaceService } from './place.service';
 import { CreatePlaceDto } from './dto/create-place.dto';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ResponsePlaceDto } from './dto/response-place.dto';
 
 @ApiTags('place')
 @Controller('place')
@@ -42,7 +43,11 @@ export class PlaceController {
   }
 
   @Get(':uuid')
-  async findOne(@Param('uuid') uuid: string) {
+  @ApiResponse({
+    status: 200,
+    type: ResponsePlaceDto,
+  })
+  async findOne(@Param('uuid') uuid: string): Promise<ResponsePlaceDto> {
     return this.placeService.findOne(uuid);
   }
 
