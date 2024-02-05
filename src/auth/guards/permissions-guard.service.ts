@@ -12,7 +12,10 @@ import {
   RequestWithUser,
 } from '../../common/interfaces/RequestWithUser';
 import { Request } from 'express';
-import { ResourceContent, ResourceType } from '../../resource/resource.type';
+import {
+  ResourceContent,
+  ResourceType,
+} from '../../resource/types/resource.type';
 import { ResourceService } from '../../resource/resource.service';
 import { inArray } from '../../common/utils/inArray';
 import { getJwtToken } from '../../common/utils/getJwtToken';

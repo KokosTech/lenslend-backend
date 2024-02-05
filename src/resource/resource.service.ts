@@ -4,7 +4,7 @@ import { ListingService } from '../listing/listing.service';
 import { PlaceService } from '../place/place.service';
 import { CommentService } from '../listing/comment/comment.service';
 import { ReviewService } from '../place/review/review.service';
-import { ResourceContent, ResourceType } from './resource.type';
+import { ResourceContent, ResourceType } from './types/resource.type';
 
 @Injectable()
 export class ResourceService {

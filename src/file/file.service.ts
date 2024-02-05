@@ -9,7 +9,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { FileDto } from './dtos/file.dto';
-import { FileInterface } from './interface/file.interface';
+import { ResponseFileDto } from './dtos/response-file.dto';
 
 @Injectable()
 export class FileService {
@@ -30,7 +30,7 @@ export class FileService {
   async uploadFile(
     fileParams: FileDto,
     userUuid: string,
-  ): Promise<FileInterface> {
+  ): Promise<ResponseFileDto> {
     const { name, type, acl } = fileParams;
     const key = `${this.config.get('AWS_S3_FOLDER')}/${userUuid}/${uuid()}-${name}`;
 

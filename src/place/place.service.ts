@@ -7,7 +7,7 @@ import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CardPlaceSelect, PlaceSelect, ShortPlaceSelect } from './place.select';
-import { ResourceContent } from '../resource/resource.type';
+import { ResourceContent } from '../resource/types/resource.type';
 import { plainToClass } from 'class-transformer';
 import { User } from '@prisma/client';
 import { Place } from './entities/place.entity';

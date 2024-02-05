@@ -7,7 +7,7 @@ import { Status, User } from '@prisma/client';
 import { plainToClass } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
 import { TagService } from '../tag/tag.service';
-import { ResourceContent } from '../resource/resource.type';
+import { ResourceContent } from '../resource/types/resource.type';
 
 @Injectable()
 export class ListingService {
