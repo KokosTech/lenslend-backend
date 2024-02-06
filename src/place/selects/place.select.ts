@@ -3,6 +3,7 @@ import { createSelect } from '../../common/utils/createSelect';
 import { CardUserSelect } from '../../listing/selects/listing.select';
 import { ReviewSelect } from '../review/selects/review.select';
 import { PlaceCategorySelect } from '../../category/selects/place-category.select';
+import { ServiceSelect } from '../service/selects/service.select';
 
 export const PlaceImageSelect = createSelect<Prisma.PlaceImageSelect>({
   uuid: true,
@@ -14,11 +15,7 @@ export const PlaceImageSelect = createSelect<Prisma.PlaceImageSelect>({
 export const PlaceServiceSelect = createSelect<Prisma.PlaceServiceSelect>({
   uuid: true,
   service: {
-    select: {
-      uuid: true,
-      name: true,
-      icon: true,
-    },
+    select: ServiceSelect,
   },
 });
 

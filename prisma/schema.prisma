@@ -47,6 +47,8 @@ model User {
   PlaceReviewReply  PlaceReviewReply[]
   UserSavedListings UserSavedListings[]
   UserSavedPlaces   UserSavedPlaces[]
+  users_rated       UserRating[]        @relation("user_rated")
+  users_rated_from  UserRating[]        @relation("user")
 }
 
 model UserSettings {
@@ -84,6 +86,19 @@ model UserSavedPlaces {
   place_uuid String
 
   @@unique([user_uuid, place_uuid])
+}
+
+model UserRating {
+  uuid            String    @id @default(uuid())
+  rating          Int
+  user_rated      User      @relation("user_rated", fields: [user_rated_uuid], references: [uuid])
+  user_rated_uuid String
+  created_at      DateTime  @default(now())
+  deleted_at      DateTime?
+  user            User      @relation("user", fields: [user_uuid], references: [uuid])
+  user_uuid       String
+
+  @@unique([user_uuid, user_rated_uuid])
 }
 
 // =============== Listing Models ===============
@@ -246,18 +261,14 @@ model PlaceCategory {
 }
 
 model Service {
-  uuid          String         @id @default(uuid())
-  name          String
-  icon          String
-  color         String
-  bg_color      String
-  dark_color    String
-  dark_bg_color String
-  status        Status         @default(PUBLIC)
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
-  deleted_at    DateTime?
-  PlaceService  PlaceService[]
+  uuid         String         @id @default(uuid())
+  name         String
+  icon         String
+  status       Status         @default(PUBLIC)
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  deleted_at   DateTime?
+  PlaceService PlaceService[]
 }
 
 model PlaceService {

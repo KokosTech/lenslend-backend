@@ -2,37 +2,54 @@ import { Injectable } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ServiceSelect } from './selects/service.select';
+import { ResponseServiceDto } from './dto/response-service.dto';
 
 @Injectable()
 export class ServiceService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  create(createServiceDto: CreateServiceDto) {
-    return 'This action adds a new service';
+  async create(
+    createServiceDto: CreateServiceDto,
+  ): Promise<ResponseServiceDto> {
+    return this.prismaService.service.create({
+      data: createServiceDto,
+      select: ServiceSelect,
+    });
   }
 
-  findAll() {
+  async findAll(): Promise<ResponseServiceDto[]> {
     return this.prismaService.service.findMany({
-      select: {
-        uuid: true,
-        name: true,
-        icon: true,
-      },
+      select: ServiceSelect,
       where: {
         status: 'PUBLIC',
+        deleted_at: null,
       },
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} service`;
+  async update(
+    uuid: string,
+    updateServiceDto: UpdateServiceDto,
+  ): Promise<ResponseServiceDto> {
+    return this.prismaService.service.update({
+      where: {
+        uuid,
+      },
+      data: updateServiceDto,
+      select: ServiceSelect,
+    });
   }
 
-  update(id: number, updateServiceDto: UpdateServiceDto) {
-    return `This action updates a #${id} service`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} service`;
+  async remove(uuid: string) {
+    return this.prismaService.service.update({
+      where: {
+        uuid,
+      },
+      data: {
+        status: 'DELETED',
+        deleted_at: new Date(),
+      },
+    });
   }
 }
