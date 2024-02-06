@@ -30,6 +30,13 @@ export const ShortUserSelect = createSelect<Prisma.UserSelect>({
   phone: true,
 });
 
+export const CardUserSelect = createSelect<Prisma.UserSelect>({
+  uuid: true,
+  name: true,
+  username: true,
+  profile_pic: true,
+});
+
 export const ListingTagSelect = createSelect<Prisma.ListingTagSelect>({
   tag: {
     select: {
@@ -80,16 +87,8 @@ export const ListingSelect = createSelect<Prisma.ListingSelect>({
     select: ListingTagSelect,
     where: {
       tag: {
-        NOT: {
-          OR: [
-            {
-              status: 'DELETED',
-            },
-            {
-              status: 'REMOVED',
-            },
-          ],
-        },
+        status: 'PUBLIC',
+        deleted_at: null,
       },
     },
   },

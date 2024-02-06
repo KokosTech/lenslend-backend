@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { UserDto } from './user';
+import { ResponseCardUserDto } from '../../user/dtos/response-card-user.dto';
 
 @Exclude()
 export class VisitorDto {
@@ -9,12 +9,14 @@ export class VisitorDto {
   uuid: string;
 
   @Expose()
-  @ApiProperty()
+  @ApiProperty({
+    type: Date,
+  })
   created_at: Date;
 
   @Expose()
   @ApiProperty({
-    type: UserDto,
+    type: ResponseCardUserDto,
   })
-  user: UserDto;
+  user: ResponseCardUserDto;
 }

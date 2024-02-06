@@ -86,6 +86,9 @@ export class ListingService {
       select: ShortListingSelect,
       where: {
         status: 'PUBLIC',
+        user: {
+          deleted_at: null,
+        },
       },
       orderBy: {
         created_at: 'desc',
@@ -93,7 +96,7 @@ export class ListingService {
     });
 
     const result = listings.map((listing) => {
-      const thumbnail = listing.images[0];
+      const [thumbnail] = listing.images;
       return {
         ...listing,
         thumbnail,

@@ -1,23 +1,29 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
-import { UpdatePlaceDto } from './dto/update-place.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CardPlaceSelect, PlaceSelect, ShortPlaceSelect } from './place.select';
+import { PlaceSelect } from './selects/place.select';
 import { ResourceContent } from '../resource/types/resource.type';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { User } from '@prisma/client';
 import { Place } from './entities/place.entity';
 import { ResponsePlaceDto } from './dto/response-place.dto';
+import { CardPlaceSelect } from './selects/card-place.select';
+import { ResponseCardPlaceDto } from './dto/response-card-place.dto';
+import { ResponseShortPlaceDto } from './dto/response-short-place.dto';
+import { ShortPlaceSelect } from './selects/short-place.select';
+import { roundRating } from '../common/utils/roundRating';
+import { UpdatePlaceDto } from './dto/update-place.dto';
+import { ResponseHereDto } from './dto/response-here.dto';
+import { ResponseSavedDto } from '../listing/dto/response-saved.dto';
 
 @Injectable()
 export class PlaceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(user: User, createPlaceDto: CreatePlaceDto) {
+  async create(
+    user: User,
+    createPlaceDto: CreatePlaceDto,
+  ): Promise<ResponsePlaceDto> {
     const { uuid } = user;
     const { categoryUuid, tags, images, services } = createPlaceDto;
 
@@ -33,7 +39,7 @@ export class PlaceService {
 
     const placeEntity = plainToClass(Place, createPlaceDto);
 
-    return this.prisma.place.create({
+    const createdPlace = this.prisma.place.create({
       data: {
         ...placeEntity,
         creator: {
@@ -79,29 +85,65 @@ export class PlaceService {
       },
       select: PlaceSelect,
     });
+
+    return plainToClass(ResponsePlaceDto, createdPlace);
   }
 
-  async findAll(format?: 'short' | 'card') {
+  async findAll(
+    format?: 'short' | 'card',
+  ): Promise<ResponseCardPlaceDto[] | ResponseShortPlaceDto[]> {
     const places = await this.prisma.place.findMany({
       select: format === 'short' ? ShortPlaceSelect : CardPlaceSelect,
+      where: {
+        status: 'PUBLIC',
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
     });
 
-    if (!places) {
-      return [];
+    if (format === 'short') {
+      return plainToInstance(ResponseShortPlaceDto, places);
     }
 
-    return places;
+    const ratings = await this.prisma.placeReview.groupBy({
+      by: ['placeUuid'],
+      _avg: {
+        rating: true,
+      },
+      where: {
+        placeUuid: { in: places.map((place) => place.uuid) },
+      },
+    });
+
+    const ratingsMap = new Map(
+      ratings.map((r) => [r.placeUuid, r._avg.rating]),
+    );
+
+    const result = places.map((place) => {
+      const averageRating = ratingsMap.get(place.uuid) || 0;
+      const [thumbnail] = place.images;
+
+      return {
+        ...place,
+        thumbnail,
+        rating: roundRating(averageRating),
+      };
+    });
+
+    console.log(result);
+
+    return plainToInstance(ResponseCardPlaceDto, result);
   }
 
   async findOne(uuid: string): Promise<ResponsePlaceDto> {
-    const place = await this.prisma.place.findUnique({
+    const place = await this.prisma.place.findUniqueOrThrow({
       where: {
         uuid,
       },
       select: PlaceSelect,
     });
 
-    if (!place) throw new NotFoundException('Place not found');
     const averageRating = await this.prisma.placeReview.aggregate({
       where: {
         placeUuid: uuid,
@@ -111,17 +153,9 @@ export class PlaceService {
       },
     });
 
-    let rounded = 0;
-
-    // eslint-disable-next-line no-underscore-dangle
-    if (averageRating._avg.rating) {
-      // eslint-disable-next-line no-underscore-dangle
-      rounded = Math.round(averageRating._avg.rating * 10) / 10;
-    }
-
     return plainToClass(ResponsePlaceDto, {
       ...place,
-      rating: rounded,
+      rating: roundRating(averageRating._avg.rating),
     });
   }
 
@@ -146,11 +180,165 @@ export class PlaceService {
     };
   }
 
-  update(id: number, updatePlaceDto: UpdatePlaceDto) {
-    return `This action updates a #${id} place`;
+  async save(uuid: string, userUuid: string): Promise<ResponseSavedDto> {
+    const existingSaved = await this.prisma.userSavedPlaces.findUnique({
+      where: {
+        user_uuid_place_uuid: {
+          place_uuid: uuid,
+          user_uuid: userUuid,
+        },
+      },
+    });
+
+    const res = await this.prisma.userSavedPlaces.upsert({
+      where: {
+        user_uuid_place_uuid: {
+          place_uuid: uuid,
+          user_uuid: userUuid,
+        },
+      },
+      create: {
+        user: {
+          connect: {
+            uuid: userUuid,
+          },
+        },
+        place: {
+          connect: {
+            uuid,
+          },
+        },
+      },
+      update: {
+        deleted_at: existingSaved?.deleted_at ? null : new Date(),
+      },
+      select: {
+        deleted_at: true,
+      },
+    });
+
+    return {
+      saved: !res.deleted_at,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} place`;
+  async here(uuid: string, userUuid: string): Promise<ResponseHereDto> {
+    const existingHere = await this.prisma.placeVisitor.findUnique({
+      where: {
+        placeUuid_userUuid: {
+          placeUuid: uuid,
+          userUuid,
+        },
+      },
+    });
+
+    const res = await this.prisma.placeVisitor.upsert({
+      where: {
+        placeUuid_userUuid: {
+          placeUuid: uuid,
+          userUuid,
+        },
+      },
+      create: {
+        user: {
+          connect: {
+            uuid: userUuid,
+          },
+        },
+        place: {
+          connect: {
+            uuid,
+          },
+        },
+      },
+      update: {
+        deleted_at: existingHere?.deleted_at ? null : new Date(),
+      },
+      select: {
+        deleted_at: true,
+      },
+    });
+
+    return {
+      here: !res.deleted_at,
+    };
+  }
+
+  async update(
+    uuid: string,
+    updatePlaceDto: UpdatePlaceDto,
+  ): Promise<ResponsePlaceDto> {
+    const { categoryUuid, tags, images, services } = updatePlaceDto;
+
+    const category = await this.prisma.placeCategory.findUnique({
+      where: {
+        uuid: categoryUuid,
+      },
+    });
+
+    if (!category) {
+      throw new BadRequestException('CATEGORY_NOT_FOUND');
+    }
+
+    const placeEntity = plainToClass(Place, updatePlaceDto);
+
+    const updatedPlace = this.prisma.place.update({
+      where: {
+        uuid,
+      },
+      data: {
+        ...placeEntity,
+        category: {
+          connect: {
+            uuid: categoryUuid,
+          },
+        },
+        images: {
+          create: images.map((image, i) => ({
+            url: image,
+            alt: image,
+            order: i + 1,
+          })),
+        },
+        tags: {
+          create: tags.map((tag) => ({
+            tag: {
+              connectOrCreate: {
+                where: {
+                  name: tag,
+                },
+                create: {
+                  name: tag,
+                },
+              },
+            },
+          })),
+        },
+        services: {
+          create: services.map((service) => ({
+            service: {
+              connect: {
+                uuid: service,
+              },
+            },
+          })),
+        },
+      },
+      select: PlaceSelect,
+    });
+
+    return plainToClass(ResponsePlaceDto, updatedPlace);
+  }
+
+  async remove(uuid: string) {
+    return this.prisma.place.update({
+      where: {
+        uuid,
+      },
+      data: {
+        status: 'DELETED',
+        deleted_at: new Date(),
+      },
+    });
   }
 }

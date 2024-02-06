@@ -27,6 +27,7 @@ export const ShortListingSelect = createSelect<Prisma.ListingSelect>({
     select: ListingImageSelect,
     where: {
       order: 1,
+      deleted_at: null,
       NOT: {
         OR: [
           {

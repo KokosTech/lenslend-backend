@@ -41,5 +41,5 @@ export class Place {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  status?: Status;
+  status: Status;
 }

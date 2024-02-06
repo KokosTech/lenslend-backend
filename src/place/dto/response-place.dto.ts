@@ -1,8 +1,13 @@
 import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@prisma/client';
-import { Review } from '../../common/types/review';
 import { VisitorDto } from '../../common/types/visitor';
+import { ResponseCategoryDto } from '../../category/dto/response-category.dto';
+import { ImageDto } from '../../common/dtos/image.dto';
+import { ResponseTagDto } from '../../tag/dto/response-tag.dto';
+import { ResponseServiceDto } from '../service/dto/response-service.dto';
+import { ResponseReviewDto } from '../review/dto/response-review.dto';
+import { ResponseCardUserDto } from '../../user/dtos/response-card-user.dto';
 
 @Exclude()
 export class ResponsePlaceDto {
@@ -20,18 +25,17 @@ export class ResponsePlaceDto {
 
   @Expose()
   @ApiProperty()
-  rating: number;
-
-  @Expose()
-  @ApiProperty()
   description: string;
 
   @Expose()
   @ApiProperty()
-  category: {
-    uuid: string;
-    name: string;
-  };
+  rating: number;
+
+  @Expose()
+  @ApiProperty({
+    type: ResponseCategoryDto,
+  })
+  category: ResponseCategoryDto;
 
   @Expose()
   @ApiProperty()
@@ -42,37 +46,39 @@ export class ResponsePlaceDto {
   lng: number;
 
   @Expose()
-  @ApiProperty()
-  images: {
-    uuid: string;
-    url: string;
-    alt: string;
-  }[];
+  @ApiProperty({
+    type: ImageDto,
+    isArray: true,
+  })
+  images: ImageDto[];
 
-  @Expose()
-  @ApiProperty()
-  tags: {
-    uuid: string;
-    name: string;
-  }[];
-
-  @Expose()
-  @ApiProperty()
-  services: {
-    uuid: string;
-    name: string;
-    icon: string;
-  }[];
-  //   visitors
   @Expose()
   @ApiProperty({
-    type: [VisitorDto],
+    type: ResponseTagDto,
+    isArray: true,
+  })
+  tags: ResponseTagDto[];
+
+  @Expose()
+  @ApiProperty({
+    type: ResponseServiceDto,
+    isArray: true,
+  })
+  services: ResponseServiceDto[];
+
+  @Expose()
+  @ApiProperty({
+    type: VisitorDto,
+    isArray: true,
   })
   visitors: VisitorDto[];
 
   @Expose()
-  @ApiProperty()
-  reviews: Review[];
+  @ApiProperty({
+    type: ResponseReviewDto,
+    isArray: true,
+  })
+  reviews: ResponseReviewDto[];
 
   @Expose()
   @ApiProperty({
@@ -81,24 +87,18 @@ export class ResponsePlaceDto {
   })
   status: Status;
 
-  // creator
   @Expose()
-  @ApiProperty()
-  creator: {
-    uuid: string;
-    name: string;
-    username: string;
-    profile_pic?: string;
-  };
+  @ApiProperty({
+    type: ResponseCardUserDto,
+  })
+  creator: ResponseCardUserDto;
 
   @Expose()
-  @ApiProperty()
-  owner?: {
-    uuid: string;
-    name: string;
-    username: string;
-    profile_pic?: string;
-  };
+  @ApiProperty({
+    type: ResponseCardUserDto,
+    required: false,
+  })
+  owner?: ResponseCardUserDto;
 
   @Expose()
   @ApiProperty()
