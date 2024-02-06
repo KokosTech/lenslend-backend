@@ -15,7 +15,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CategoryType } from './types/category.type';
 import { ResponseCategoryDto } from './dto/response-category.dto';
 import { ResponseExpandedCategoryDto } from './dto/response-expanded-category.dto';
@@ -29,6 +35,7 @@ export class CategoryController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @ApiTags('admin')
+  @ApiBearerAuth()
   @ApiParam({
     name: 'type',
     enum: ['LISTING', 'PLACE'],
@@ -82,6 +89,7 @@ export class CategoryController {
   @Roles(Role.ADMIN)
   @UseGuards(JwtAuthGuard, RoleGuard)
   @ApiTags('admin')
+  @ApiBearerAuth()
   @ApiParam({
     name: 'type',
     enum: ['LISTING', 'PLACE'],
@@ -103,6 +111,7 @@ export class CategoryController {
   @Delete(':uuid')
   @Roles(Role.ADMIN)
   @ApiTags('admin')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @ApiParam({
     name: 'type',
