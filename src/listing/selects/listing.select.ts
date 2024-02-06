@@ -1,10 +1,6 @@
 import { createSelect } from '../../common/utils/createSelect';
 import { Prisma } from '@prisma/client';
-
-export const CategorySelect = createSelect<Prisma.CategorySelect>({
-  uuid: true,
-  name: true,
-});
+import { CategorySelect } from '../../category/selects/listing-category.select';
 
 export const ListingImageSelect = createSelect<Prisma.ListingImageSelect>({
   uuid: true,
