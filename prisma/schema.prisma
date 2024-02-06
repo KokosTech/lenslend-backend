@@ -167,6 +167,7 @@ model Tag {
 model ListingComment {
   uuid         String    @id @default(uuid())
   content      String
+  status       Status    @default(PUBLIC)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
   deleted_at   DateTime?

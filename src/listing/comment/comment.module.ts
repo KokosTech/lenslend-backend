@@ -6,7 +6,12 @@ import { AuthModule } from '../../auth/auth.module';
 import { ResourceModule } from '../../resource/resource.module';
 
 @Module({
-  imports: [PrismaModule, ResourceModule, forwardRef(() => AuthModule)],
+  imports: [
+    PrismaModule,
+    ResourceModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => ResourceModule),
+  ],
   controllers: [CommentController],
   providers: [CommentService],
   exports: [CommentService],

@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ResourceContent } from '../../resource/types/resource.type';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { ResponseCommentDto } from './dto/response-comment-dto';
+import { CommentSelect } from './selects/comment.select';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class CommentService {
@@ -11,8 +16,8 @@ export class CommentService {
     userUuid: string,
     listingUuid: string,
     createCommentDto: CreateCommentDto,
-  ) {
-    return this.prisma.listingComment.create({
+  ): Promise<ResponseCommentDto> {
+    const createdComment = await this.prisma.listingComment.create({
       data: {
         content: createCommentDto.content,
         user: {
@@ -26,26 +31,18 @@ export class CommentService {
           },
         },
       },
+      select: CommentSelect,
     });
+
+    return plainToClass(ResponseCommentDto, createdComment);
   }
 
-  async findAll(uuid: string) {
-    return this.prisma.listingComment.findMany({
-      select: {
-        uuid: true,
-        content: true,
-        created_at: true,
-        updated_at: true,
-        user: {
-          select: {
-            uuid: true,
-            name: true,
-            username: true,
-            profile_pic: true,
-          },
-        },
-      },
+  async findAll(uuid: string): Promise<ResponseCommentDto[]> {
+    const comments = await this.prisma.listingComment.findMany({
+      select: CommentSelect,
       where: {
+        status: Status.PUBLIC,
+        deleted_at: null,
         listing: {
           uuid,
         },
@@ -54,40 +51,69 @@ export class CommentService {
         created_at: 'desc',
       },
     });
+
+    console.log('comments', comments);
+
+    return plainToInstance(ResponseCommentDto, comments);
   }
 
-  findOne(uuid: string) {
-    return this.prisma.listingComment.findUnique({
+  async findOne(uuid: string): Promise<ResponseCommentDto> {
+    const comment = await this.prisma.listingComment.findUniqueOrThrow({
+      where: {
+        uuid,
+        status: Status.PUBLIC,
+        deleted_at: null,
+      },
+    });
+
+    return plainToClass(ResponseCommentDto, comment);
+  }
+
+  async findOneMeta(uuid: string): Promise<ResourceContent | null> {
+    const comment = await this.prisma.listingComment.findUnique({
       where: {
         uuid,
       },
+      select: {
+        uuid: true,
+        user_uuid: true,
+        status: true,
+      },
     });
+
+    if (!comment) return null;
+
+    return {
+      uuid: comment.uuid,
+      ownerId: comment.user_uuid,
+      status: 'PUBLIC',
+    };
   }
 
-  // async findOneMeta(uuid: string): Promise<ResourceContent | null> {
-  //   const comment = await this.prisma.listingComment.findUnique({
-  //     where: {
-  //       uuid,
-  //     },
-  //     select: {
-  //       uuid: true,
-  //       user_uuid: true,
-  //     },
-  //   });
-  //
-  //   if (!comment) return null;
-  //
-  //   return {
-  //     uuid: comment.uuid,
-  //     ownerId: comment.user_uuid,
-  //   };
-  // }
+  async update(uuid: string, updateCommentDto: UpdateCommentDto) {
+    const updatedComment = await this.prisma.listingComment.update({
+      where: {
+        uuid,
+      },
+      data: {
+        content: updateCommentDto.content,
+        status: updateCommentDto.status ?? undefined,
+      },
+      select: CommentSelect,
+    });
 
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
+    return plainToClass(ResponseCommentDto, updatedComment);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
+  async remove(uuid: string) {
+    return this.prisma.listingComment.update({
+      where: {
+        uuid,
+      },
+      data: {
+        status: Status.DELETED,
+      },
+      select: CommentSelect,
+    });
   }
 }
