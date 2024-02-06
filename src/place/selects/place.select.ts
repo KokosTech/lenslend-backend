@@ -1,22 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { createSelect } from '../../common/utils/createSelect';
 import { CardUserSelect } from '../../listing/selects/listing.select';
-
-export const ReviewSelect = createSelect<Prisma.PlaceReviewSelect>({
-  uuid: true,
-  rating: true,
-  content: true,
-  created_at: true,
-  updated_at: true,
-  user: {
-    select: {
-      uuid: true,
-      name: true,
-      username: true,
-      profile_pic: true,
-    },
-  },
-});
+import { ReviewSelect } from '../review/selects/review.select';
 
 export const PlaceCategorySelect = createSelect<Prisma.PlaceCategorySelect>({
   uuid: true,

@@ -7,5 +7,6 @@ export interface RequestWithUser extends Request {
 export interface RequestWithParamUuid {
   params: {
     uuid: string;
+    sub_uuid?: string;
   };
 }

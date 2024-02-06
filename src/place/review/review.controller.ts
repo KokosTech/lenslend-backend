@@ -16,58 +16,117 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../../common/interfaces/RequestWithUser';
 import {
   ApiBearerAuth,
-  ApiProperty,
+  ApiBody,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ResponseReviewDto } from './dto/response-review.dto';
+import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
+import { Action } from '../../auth/decorators/action.decorator';
+import { Resource } from '../../auth/decorators/resource.decorator';
 
 @ApiTags('place/review')
+@ApiParam({
+  name: 'uuid',
+  required: true,
+  description: 'Place UUID',
+})
 @Controller('/place/:uuid/review')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard)
+  @Post('')
+  @Action('view')
+  @Resource('place')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
-  @ApiProperty({ type: CreateReviewDto })
-  @ApiResponse({ status: 201 })
+  @ApiBody({ type: CreateReviewDto })
+  @ApiResponse({
+    status: 201,
+    type: ResponseReviewDto,
+  })
   async create(
     @Req() req: RequestWithUser,
     @Body() createReviewDto: CreateReviewDto,
     @Param('uuid') uuid: string,
-  ) {
+  ): Promise<ResponseReviewDto> {
     return this.reviewService.create(req.user.uuid, uuid, createReviewDto);
   }
 
   @Get()
-  async findAll(@Param('place_uuid') uuid: string) {
+  @ApiResponse({
+    status: 200,
+    type: [ResponseReviewDto],
+  })
+  async findAll(@Param('uuid') uuid: string): Promise<ResponseReviewDto[]> {
     return this.reviewService.findAll(uuid);
   }
 
   @Get('my-review')
-  @UseGuards(JwtAuthGuard)
+  @Action('view')
+  @Resource('place')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
   @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    type: ResponseReviewDto,
+  })
   async findOneUserReview(
     @Req() req: RequestWithUser,
     @Param('uuid') uuid: string,
-  ) {
-    const rev = await this.reviewService.findOneUserReview(req.user.uuid, uuid);
-    console.log('rev', rev);
-    return rev;
+  ): Promise<ResponseReviewDto> {
+    return this.reviewService.findOneUserReview(req.user.uuid, uuid);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.reviewService.findOne(id);
+  @Get(':sub_uuid')
+  @Action('view')
+  @Resource('place')
+  @UseGuards(PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'sub_uuid',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    type: ResponseReviewDto,
+  })
+  async findOne(@Param('sub_uuid') uuid: string): Promise<ResponseReviewDto> {
+    return this.reviewService.findOne(uuid);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
-    return this.reviewService.update(+id, updateReviewDto);
+  @Patch(':sub_uuid')
+  @Action('manage')
+  @Resource('review')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'sub_uuid',
+    type: String,
+  })
+  @ApiBody({ type: UpdateReviewDto })
+  @ApiResponse({
+    status: 200,
+    type: ResponseReviewDto,
+  })
+  async update(
+    @Param('sub_uuid') uuid: string,
+    @Body() updateReviewDto: UpdateReviewDto,
+  ): Promise<ResponseReviewDto> {
+    return this.reviewService.update(uuid, updateReviewDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reviewService.remove(+id);
+  @Delete(':sub_uuid')
+  @Action('manage')
+  @Resource('review')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'sub_uuid',
+    type: String,
+  })
+  remove(@Param('sub_uuid') uuid: string) {
+    return this.reviewService.remove(uuid);
   }
 }

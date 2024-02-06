@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { ListingService } from '../listing/listing.service';
 import { PlaceService } from '../place/place.service';
@@ -26,11 +26,8 @@ export class ResourceService {
         return this.placeService.findOneMeta(id);
       case 'review':
         return this.reviewService.findOneMeta(id);
-      // Add other cases as necessary
-      default:
-        throw new NotFoundException(
-          `Resource of type ${resourceType} not found.`,
-        );
+      case 'comment':
+        return this.commentService.findOneMeta(id);
     }
   }
 }
