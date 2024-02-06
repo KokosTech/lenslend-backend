@@ -35,7 +35,6 @@ model User {
   listingComments   ListingComment[]
   listingsRatings   ListingRating[]
   listingReports    ListingReport[]
-  UserSavedListings UserSavedListings[]
   chats             Chat[]              @relation("ChatUsers")
   Chat              Chat?               @relation(fields: [chatUuid], references: [uuid])
   chatUuid          String?
@@ -46,6 +45,8 @@ model User {
   PlaceReview       PlaceReview[]
   PlaceReport       PlaceReport[]
   PlaceReviewReply  PlaceReviewReply[]
+  UserSavedListings UserSavedListings[]
+  UserSavedPlaces   UserSavedPlaces[]
 }
 
 model UserSettings {
@@ -71,6 +72,18 @@ model UserSavedListings {
   listing_uuid String
 
   @@unique([user_uuid, listing_uuid])
+}
+
+model UserSavedPlaces {
+  uuid       String    @id @default(uuid())
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+  user       User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid  String
+  place      Place     @relation(fields: [place_uuid], references: [uuid])
+  place_uuid String
+
+  @@unique([user_uuid, place_uuid])
 }
 
 // =============== Listing Models ===============
@@ -191,28 +204,29 @@ model ListingReport {
 // =============== Places Models ===============
 
 model Place {
-  uuid         String         @id @default(uuid())
-  name         String
-  description  String
-  categoryUuid String
-  category     PlaceCategory  @relation(fields: [categoryUuid], references: [uuid])
-  lat          Float
-  lng          Float
-  icon         String
-  status       Status         @default(PUBLIC)
-  creatorUuid  String
-  creator      User           @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
-  ownerUuid    String?
-  owner        User?          @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
-  deleted_at   DateTime?
-  services     PlaceService[]
-  images       PlaceImage[]
-  tags         PlaceTag[]
-  reviews      PlaceReview[]
-  reports      PlaceReport[]
-  visitors     PlaceVisitor[] @relation("PlaceVisitors")
+  uuid            String            @id @default(uuid())
+  name            String
+  description     String
+  categoryUuid    String
+  category        PlaceCategory     @relation(fields: [categoryUuid], references: [uuid])
+  lat             Float
+  lng             Float
+  icon            String
+  status          Status            @default(PUBLIC)
+  creatorUuid     String
+  creator         User              @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
+  ownerUuid       String?
+  owner           User?             @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  deleted_at      DateTime?
+  services        PlaceService[]
+  images          PlaceImage[]
+  tags            PlaceTag[]
+  reviews         PlaceReview[]
+  reports         PlaceReport[]
+  visitors        PlaceVisitor[]    @relation("PlaceVisitors")
+  UserSavedPlaces UserSavedPlaces[]
 
   @@unique([lat, lng])
 }
