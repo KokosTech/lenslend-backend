@@ -33,6 +33,12 @@ import { PermissionsGuard } from '../auth/guards/permissions-guard.service';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { ResponseHereDto } from './dto/response-here.dto';
 import { ResponseSavedDto } from '../listing/dto/response-saved.dto';
+import { PaginationResultDto } from '../common/dtos/pagination.dto';
+import { ApiParamPaginated } from '../common/decorators/paginate-query.decorator';
+import { ApiOkResponsePaginated } from '../common/decorators/paginate-swagger.decorator';
+import { ResponseShortListingDto } from '../listing/dto/response-short-listing.dto';
+import { Paginate } from '../common/decorators/paginate.decorator';
+import { Pagination } from '../common/pagination';
 
 @ApiTags('place')
 @Controller('place')
@@ -62,6 +68,8 @@ export class PlaceController {
     enum: ['short', 'card'],
     required: false,
   })
+  @ApiParamPaginated()
+  @ApiOkResponsePaginated(ResponseShortListingDto)
   @ApiExtraModels(ResponseCardPlaceDto, ResponseShortPlaceDto)
   @ApiResponse({
     status: 200,
@@ -84,9 +92,12 @@ export class PlaceController {
     },
   })
   async findAll(
+    @Paginate() pagination: Pagination,
     @Query('format') format?: 'short' | 'card',
-  ): Promise<ResponseCardPlaceDto[] | ResponseShortPlaceDto[]> {
-    return this.placeService.findAll(format);
+  ): Promise<
+    PaginationResultDto<ResponseCardPlaceDto | ResponseShortPlaceDto>
+  > {
+    return this.placeService.findAll(pagination, format);
   }
 
   @Get(':uuid')

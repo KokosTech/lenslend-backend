@@ -14,6 +14,8 @@ import {
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { RateUserDto } from './dtos/rate-user.dto';
 import { roundRating } from '../common/utils/roundRating';
+import { Pagination } from '../common/pagination';
+import { PaginationResultDto } from '../common/dtos/pagination.dto';
 
 export const roundsOfHashing = 10;
 
@@ -21,9 +23,22 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<ResponseProfileDto[]> {
-    const users = await this.prisma.user.findMany();
-    return plainToInstance(ResponseProfileDto, users);
+  async findAll(
+    pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseProfileDto>> {
+    const totalCount = await this.prisma.user.count();
+    const users = await this.prisma.user.findMany({
+      orderBy: {
+        created_at: 'desc',
+      },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
+    });
+    return {
+      data: plainToInstance(ResponseProfileDto, users),
+      ...pagination,
+      totalCount,
+    };
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -148,8 +163,26 @@ export class UserService {
     });
   }
 
-  async getPublicProfiles(): Promise<ResponsePublicProfileDto[]> {
-    const users = await this.prisma.user.findMany();
+  async getPublicProfiles(
+    pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponsePublicProfileDto>> {
+    const whereClause = {
+      deleted_at: null,
+    };
+
+    const totalCount = await this.prisma.user.count({
+      where: whereClause,
+    });
+
+    const users = await this.prisma.user.findMany({
+      where: whereClause,
+      orderBy: {
+        created_at: 'desc',
+      },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
+    });
+
     const userRatings = await this.prisma.userRating.groupBy({
       by: ['user_rated_uuid'],
       _avg: {
@@ -157,6 +190,7 @@ export class UserService {
       },
       where: {
         user_uuid: { in: users.map((user) => user.uuid) },
+        deleted_at: null,
       },
     });
 
@@ -172,7 +206,11 @@ export class UserService {
       };
     });
 
-    return plainToInstance(ResponsePublicProfileDto, result);
+    return {
+      data: plainToInstance(ResponsePublicProfileDto, result),
+      ...pagination,
+      totalCount,
+    };
   }
 
   async rate(

@@ -7,6 +7,8 @@ import { plainToClass, plainToInstance } from 'class-transformer';
 import { ResponseCommentDto } from './dto/response-comment-dto';
 import { CommentSelect } from './selects/comment.select';
 import { Status } from '@prisma/client';
+import { Pagination } from '../../common/pagination';
+import { PaginationResultDto } from '../../common/dtos/pagination.dto';
 
 @Injectable()
 export class CommentService {
@@ -37,24 +39,37 @@ export class CommentService {
     return plainToClass(ResponseCommentDto, createdComment);
   }
 
-  async findAll(uuid: string): Promise<ResponseCommentDto[]> {
+  async findAll(
+    uuid: string,
+    pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseCommentDto>> {
+    const whereClause = {
+      deleted_at: null,
+      status: Status.PUBLIC,
+      listing: {
+        uuid,
+      },
+    };
+
+    const totalCount = await this.prisma.listingComment.count({
+      where: whereClause,
+    });
+
     const comments = await this.prisma.listingComment.findMany({
       select: CommentSelect,
-      where: {
-        status: Status.PUBLIC,
-        deleted_at: null,
-        listing: {
-          uuid,
-        },
-      },
+      where: whereClause,
       orderBy: {
         created_at: 'desc',
       },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
     });
 
-    console.log('comments', comments);
-
-    return plainToInstance(ResponseCommentDto, comments);
+    return {
+      data: plainToInstance(ResponseCommentDto, comments),
+      ...pagination,
+      totalCount,
+    };
   }
 
   async findOne(uuid: string): Promise<ResponseCommentDto> {
