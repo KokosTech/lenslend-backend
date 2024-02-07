@@ -37,6 +37,10 @@ export class ResponsePublicProfileDto {
 
   @Expose()
   @ApiProperty()
+  rating: number;
+
+  @Expose()
+  @ApiProperty()
   created_at: string;
 }
 

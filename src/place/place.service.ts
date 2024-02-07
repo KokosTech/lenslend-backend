@@ -15,10 +15,15 @@ import { roundRating } from '../common/utils/roundRating';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { ResponseHereDto } from './dto/response-here.dto';
 import { ResponseSavedDto } from '../listing/dto/response-saved.dto';
+import { UserService } from '../user/user.service';
+import { VisitorDto } from '../common/types/visitor';
 
 @Injectable()
 export class PlaceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService,
+  ) {}
 
   async create(
     user: User,
@@ -131,8 +136,6 @@ export class PlaceService {
       };
     });
 
-    console.log(result);
-
     return plainToInstance(ResponseCardPlaceDto, result);
   }
 
@@ -153,8 +156,35 @@ export class PlaceService {
       },
     });
 
+    // get creator user rating, owner user rating and visitors user rating
+    const creatorRating = await this.userService.getUserRating(
+      place.creator.uuid,
+    );
+    const ownerRating = await this.userService.getUserRating(place.owner?.uuid);
+
+    const visitorsRatingsPromise = place.visitors.map(async (visitor) => {
+      const newVisitor = plainToInstance(VisitorDto, visitor);
+      console.log('newVisitor', newVisitor);
+      return this.userService.getUserRating(newVisitor.user.uuid);
+    });
+    const visitorRatings = await Promise.all(visitorsRatingsPromise);
+
+    console.log('vis', visitorRatings);
+
     return plainToClass(ResponsePlaceDto, {
       ...place,
+      creator: {
+        ...place.creator,
+        rating: roundRating(creatorRating),
+      },
+      owner: {
+        ...place.owner,
+        rating: roundRating(ownerRating),
+      },
+      visitors: place.visitors.map((visitor, i) => ({
+        ...visitor,
+        rating: roundRating(visitorRatings[i]),
+      })),
       rating: roundRating(averageRating._avg.rating),
     });
   }

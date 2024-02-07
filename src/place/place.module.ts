@@ -7,6 +7,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ServiceModule } from './service/service.module';
 import { AuthModule } from '../auth/auth.module';
 import { ResourceModule } from '../resource/resource.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   controllers: [PlaceController],
@@ -17,6 +18,7 @@ import { ResourceModule } from '../resource/resource.module';
     PrismaModule,
     ServiceModule,
     forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
     forwardRef(() => ResourceModule),
   ],
   exports: [PlaceService],

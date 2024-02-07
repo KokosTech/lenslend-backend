@@ -6,19 +6,19 @@ import { ListingSelect } from './selects/listing.select';
 import { Status, User } from '@prisma/client';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { Listing } from './entities/listing.entity';
-import { TagService } from '../tag/tag.service';
 import { ResourceContent } from '../resource/types/resource.type';
 import { ResponseShortListingDto } from './dto/response-short-listing.dto';
 import { ResponseListingDto } from './dto/response-listing.dto';
 import { RateListingDto } from './dto/rate-listing.dto';
 import { ResponseSavedDto } from './dto/response-saved.dto';
 import { ShortListingSelect } from './selects/short-listing.select';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ListingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly tagService: TagService,
+    private readonly userService: UserService,
   ) {}
 
   async create(
@@ -114,7 +114,12 @@ export class ListingService {
       select: ListingSelect,
     });
 
-    return plainToInstance(ResponseListingDto, listing);
+    const userRating = await this.userService.getUserRating(listing.user_uuid);
+
+    return plainToInstance(ResponseListingDto, {
+      ...listing,
+      rating: userRating,
+    });
   }
 
   async findOneMeta(id: string): Promise<ResourceContent | null> {
@@ -138,7 +143,7 @@ export class ListingService {
     };
   }
 
-  async findOneByUsername(
+  async findByUsername(
     username: string,
     status?: Status,
   ): Promise<ResponseShortListingDto[]> {

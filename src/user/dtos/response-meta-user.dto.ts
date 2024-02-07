@@ -1,33 +1,8 @@
-import { Exclude, Expose } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
+import { OmitType, PartialType } from '@nestjs/swagger';
+import { ResponsePublicProfileDto } from './response-user.dto';
 
 @Exclude()
-export class ResponseMetaUserDto {
-  @Expose()
-  @ApiProperty()
-  uuid: string;
-
-  @Expose()
-  @ApiProperty()
-  name: string;
-
-  @Expose()
-  @ApiProperty()
-  username: string;
-
-  @Expose()
-  @ApiProperty()
-  phone: string;
-
-  @Expose()
-  @ApiProperty()
-  bio?: string;
-
-  @Expose()
-  @ApiProperty()
-  profile_pic?: string;
-
-  @Expose()
-  @ApiProperty()
-  header_pic?: string;
-}
+export class ResponseMetaUserDto extends PartialType(
+  OmitType(ResponsePublicProfileDto, ['role', 'created_at'] as const),
+) {}

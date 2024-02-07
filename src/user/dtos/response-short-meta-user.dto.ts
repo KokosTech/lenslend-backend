@@ -1,23 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { ResponseMetaUserDto } from './response-meta-user.dto';
-import { Exclude, Expose } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 
 @Exclude()
-export class ResponseShortMetaUserDto extends PartialType(ResponseMetaUserDto) {
-  @Expose()
-  @ApiProperty()
-  uuid: string;
-
-  @Expose()
-  @ApiProperty()
-  name: string;
-
-  @Expose()
-  @ApiProperty()
-  username: string;
-
-  @Expose()
-  @ApiProperty()
-  phone: string;
-}
+export class ResponseShortMetaUserDto extends PartialType(
+  OmitType(ResponseMetaUserDto, [
+    'bio',
+    'profile_pic',
+    'header_pic',
+    'rating',
+  ] as const),
+) {}
