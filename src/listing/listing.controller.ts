@@ -28,6 +28,11 @@ import { PermissionsGuard } from '../auth/guards/permissions-guard.service';
 import { ResponseShortListingDto } from './dto/response-short-listing.dto';
 import { RateListingDto } from './dto/rate-listing.dto';
 import { ResponseSavedDto } from './dto/response-saved.dto';
+import { Paginate } from '../common/decorators/paginate.decorator';
+import { Pagination } from '../common/pagination';
+import { PaginationResultDto } from '../common/dtos/pagination.dto';
+import { ApiOkResponsePaginated } from '../common/decorators/paginate-swagger.decorator';
+import { ApiParamPaginated } from '../common/decorators/paginate-query.decorator';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -53,12 +58,12 @@ export class ListingController {
   }
 
   @Get()
-  @ApiOkResponse({
-    description: 'Get all listings',
-    type: [ResponseShortListingDto],
-  })
-  async findAll(): Promise<ResponseShortListingDto[]> {
-    return this.listingService.findAll();
+  @ApiParamPaginated()
+  @ApiOkResponsePaginated(ResponseShortListingDto)
+  async findAll(
+    @Paginate() pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    return this.listingService.findAll(pagination);
   }
 
   @Get(':uuid')

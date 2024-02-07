@@ -7,6 +7,8 @@ import { ResponseReviewDto } from './dto/response-review.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
 import { ReviewSelect } from './selects/review.select';
 import { Status } from '@prisma/client';
+import { Pagination } from '../../common/pagination';
+import { PaginationResultDto } from '../../common/dtos/pagination.dto';
 
 @Injectable()
 export class ReviewService {
@@ -38,22 +40,37 @@ export class ReviewService {
     return plainToClass(ResponseReviewDto, createdReview);
   }
 
-  async findAll(uuid: string): Promise<ResponseReviewDto[]> {
+  async findAll(
+    uuid: string,
+    pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseReviewDto>> {
+    const whereClause = {
+      deleted_at: null,
+      status: Status.PUBLIC,
+      place: {
+        uuid,
+      },
+    };
+
+    const totalCount = await this.prisma.placeReview.count({
+      where: whereClause,
+    });
+
     const reviews = await this.prisma.placeReview.findMany({
       select: ReviewSelect,
-      where: {
-        deleted_at: null,
-        status: Status.PUBLIC,
-        place: {
-          uuid,
-        },
-      },
+      where: whereClause,
       orderBy: {
         created_at: 'desc',
       },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
     });
 
-    return plainToInstance(ResponseReviewDto, reviews);
+    return {
+      data: plainToInstance(ResponseReviewDto, reviews),
+      ...pagination,
+      totalCount,
+    };
   }
 
   async findOne(uuid: string) {

@@ -13,6 +13,9 @@ import { RateListingDto } from './dto/rate-listing.dto';
 import { ResponseSavedDto } from './dto/response-saved.dto';
 import { ShortListingSelect } from './selects/short-listing.select';
 import { UserService } from '../user/user.service';
+import { Pagination } from '../common/pagination';
+import { PaginationResultDto } from '../common/dtos/pagination.dto';
+import { commonWhereClause } from '../common/common.where';
 
 @Injectable()
 export class ListingService {
@@ -81,18 +84,21 @@ export class ListingService {
     return plainToInstance(ResponseListingDto, createdListing);
   }
 
-  async findAll(): Promise<ResponseShortListingDto[]> {
+  async findAll(
+    paginate: Pagination,
+  ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    const totalCount = await this.prisma.listing.count({
+      where: commonWhereClause,
+    });
+
     const listings = await this.prisma.listing.findMany({
       select: ShortListingSelect,
-      where: {
-        status: 'PUBLIC',
-        user: {
-          deleted_at: null,
-        },
-      },
+      where: commonWhereClause,
       orderBy: {
         created_at: 'desc',
       },
+      skip: paginate.page * paginate.limit - paginate.limit,
+      take: paginate.limit,
     });
 
     const result = listings.map((listing) => {
@@ -103,7 +109,12 @@ export class ListingService {
       };
     });
 
-    return plainToInstance(ResponseShortListingDto, result);
+    return {
+      data: plainToInstance(ResponseShortListingDto, result),
+      page: paginate.page,
+      limit: paginate.limit,
+      totalCount,
+    };
   }
 
   async findOne(uuid: string): Promise<ResponseListingDto> {
@@ -144,23 +155,37 @@ export class ListingService {
   }
 
   async findByUsername(
+    paginate: Pagination,
     username: string,
     status?: Status,
-  ): Promise<ResponseShortListingDto[]> {
-    const listings = await this.prisma.listing.findMany({
-      where: {
-        user: {
-          username,
-        },
-        status,
+  ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    const whereClause = {
+      user: {
+        username,
       },
+      status,
+    };
+
+    const totalCount = await this.prisma.listing.count({
+      where: whereClause,
+    });
+
+    const listings = await this.prisma.listing.findMany({
+      where: whereClause,
       select: ShortListingSelect,
       orderBy: {
         created_at: 'desc',
       },
+      skip: paginate.page * paginate.limit - paginate.limit,
+      take: paginate.limit,
     });
 
-    return plainToInstance(ResponseShortListingDto, listings);
+    return {
+      data: plainToInstance(ResponseShortListingDto, listings),
+      page: 1,
+      limit: 10,
+      totalCount,
+    };
   }
 
   async rate(

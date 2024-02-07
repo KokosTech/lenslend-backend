@@ -25,6 +25,11 @@ import { ResponseReviewDto } from './dto/response-review.dto';
 import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
 import { Action } from '../../auth/decorators/action.decorator';
 import { Resource } from '../../auth/decorators/resource.decorator';
+import { ApiParamPaginated } from '../../common/decorators/paginate-query.decorator';
+import { ApiOkResponsePaginated } from '../../common/decorators/paginate-swagger.decorator';
+import { PaginationResultDto } from '../../common/dtos/pagination.dto';
+import { Paginate } from '../../common/decorators/paginate.decorator';
+import { Pagination } from '../../common/pagination';
 
 @ApiTags('place/review')
 @ApiParam({
@@ -55,12 +60,13 @@ export class ReviewController {
   }
 
   @Get()
-  @ApiResponse({
-    status: 200,
-    type: [ResponseReviewDto],
-  })
-  async findAll(@Param('uuid') uuid: string): Promise<ResponseReviewDto[]> {
-    return this.reviewService.findAll(uuid);
+  @ApiParamPaginated()
+  @ApiOkResponsePaginated(ResponseReviewDto)
+  async findAll(
+    @Param('uuid') uuid: string,
+    @Paginate() pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseReviewDto>> {
+    return this.reviewService.findAll(uuid, pagination);
   }
 
   @Get('my-review')

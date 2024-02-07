@@ -25,6 +25,11 @@ import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
 import { Resource } from '../../auth/decorators/resource.decorator';
 import { Action } from '../../auth/decorators/action.decorator';
 import { ResponseCommentDto } from './dto/response-comment-dto';
+import { ApiParamPaginated } from '../../common/decorators/paginate-query.decorator';
+import { ApiOkResponsePaginated } from '../../common/decorators/paginate-swagger.decorator';
+import { PaginationResultDto } from '../../common/dtos/pagination.dto';
+import { Paginate } from '../../common/decorators/paginate.decorator';
+import { Pagination } from '../../common/pagination';
 
 @ApiTags('listing/comment')
 @Controller('listing/:uuid/comment')
@@ -61,12 +66,13 @@ export class CommentController {
   @Resource('listing')
   @UseGuards(PermissionsGuard)
   @ApiBearerAuth()
-  @ApiResponse({
-    status: 200,
-    type: [ResponseCommentDto],
-  })
-  async findAll(@Param('uuid') uuid: string): Promise<ResponseCommentDto[]> {
-    return this.commentService.findAll(uuid);
+  @ApiParamPaginated()
+  @ApiOkResponsePaginated(ResponseCommentDto)
+  async findAll(
+    @Param('uuid') uuid: string,
+    @Paginate() pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseCommentDto>> {
+    return this.commentService.findAll(uuid, pagination);
   }
 
   @Get(':sub_uuid')

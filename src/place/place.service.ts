@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PlaceSelect } from './selects/place.select';
 import { ResourceContent } from '../resource/types/resource.type';
 import { plainToClass, plainToInstance } from 'class-transformer';
-import { User } from '@prisma/client';
+import { Status, User } from '@prisma/client';
 import { Place } from './entities/place.entity';
 import { ResponsePlaceDto } from './dto/response-place.dto';
 import { CardPlaceSelect } from './selects/card-place.select';
@@ -17,6 +17,9 @@ import { ResponseHereDto } from './dto/response-here.dto';
 import { ResponseSavedDto } from '../listing/dto/response-saved.dto';
 import { UserService } from '../user/user.service';
 import { VisitorDto } from '../common/types/visitor';
+import { PaginationResultDto } from '../common/dtos/pagination.dto';
+import { commonWhereClause } from '../common/common.where';
+import { Pagination } from '../common/pagination';
 
 @Injectable()
 export class PlaceService {
@@ -95,20 +98,52 @@ export class PlaceService {
   }
 
   async findAll(
+    pagination: Pagination,
     format?: 'short' | 'card',
-  ): Promise<ResponseCardPlaceDto[] | ResponseShortPlaceDto[]> {
+    username?: string,
+    status?: Status,
+  ): Promise<
+    PaginationResultDto<ResponseCardPlaceDto | ResponseShortPlaceDto>
+  > {
+    const whereClause = username
+      ? {
+          // if status is not provided, get all places
+          status: status || undefined,
+          OR: [
+            {
+              creator: {
+                username,
+              },
+            },
+            {
+              owner: {
+                username,
+              },
+            },
+          ],
+        }
+      : commonWhereClause;
+
+    const totalCount = await this.prisma.place.count({
+      where: whereClause,
+    });
+
     const places = await this.prisma.place.findMany({
       select: format === 'short' ? ShortPlaceSelect : CardPlaceSelect,
-      where: {
-        status: 'PUBLIC',
-      },
+      where: whereClause,
       orderBy: {
         created_at: 'desc',
       },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
     });
 
     if (format === 'short') {
-      return plainToInstance(ResponseShortPlaceDto, places);
+      return {
+        data: plainToInstance(ResponseShortPlaceDto, places),
+        ...pagination,
+        totalCount,
+      };
     }
 
     const ratings = await this.prisma.placeReview.groupBy({
@@ -136,7 +171,11 @@ export class PlaceService {
       };
     });
 
-    return plainToInstance(ResponseCardPlaceDto, result);
+    return {
+      data: plainToInstance(ResponseCardPlaceDto, result),
+      ...pagination,
+      totalCount,
+    };
   }
 
   async findOne(uuid: string): Promise<ResponsePlaceDto> {

@@ -150,14 +150,9 @@ export class AuthService {
     };
   }
 
-  async refreshTokens(refreshToken: string) {
-    const { id, tokenId }: RefreshTokenInterface =
-      await this.jwtService.verifyAsync(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET,
-      });
-
+  async refreshTokens(id: string, tokenId: string) {
     const isTokenIdValid = await this.redisService.get(tokenId);
-    if (!isTokenIdValid) {
+    if (isTokenIdValid) {
       throw new UnauthorizedException('INVALID_REFRESH_TOKEN');
     }
 
@@ -171,7 +166,6 @@ export class AuthService {
       access_token: this.jwtService.sign({
         id: user.uuid,
       }),
-      refresh_token: refreshToken,
     };
   }
 
