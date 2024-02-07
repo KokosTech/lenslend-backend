@@ -73,13 +73,13 @@ export class AuthController {
     type: AuthEntity,
   })
   async refreshToken(@Request() req: RequestWithTokenInterface) {
-    const authorization = req.headers.get('authorization');
+    const { id, tokenId } = req.user;
 
-    if (!authorization) {
+    if (!id) {
       throw new UnauthorizedException('NO_TOKEN_PROVIDED');
     }
 
-    return this.authService.refreshTokens(authorization.split(' ')[1]);
+    return this.authService.refreshTokens(id, tokenId);
   }
 
   @Get('blacklist')
