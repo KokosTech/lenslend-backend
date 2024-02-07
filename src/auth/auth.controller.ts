@@ -55,11 +55,11 @@ export class AuthController {
   }
 
   @Post('logout')
+  @UseGuards(RefreshJwtGuard)
+  @ApiBearerAuth('refresh-token')
   @ApiOkResponse({
     type: AuthEntity,
   })
-  @ApiBearerAuth('refresh_token')
-  @UseGuards(RefreshJwtGuard)
   async logout(
     @Body()
     { accessToken, refreshToken }: LogoutDto,

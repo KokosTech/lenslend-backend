@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ListingModule } from '../listing/listing.module';
 import { AuthModule } from '../auth/auth.module';
+import { UserController } from './user.controller';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { AuthModule } from '../auth/auth.module';
     forwardRef(() => AuthModule),
     forwardRef(() => ListingModule),
   ],
+  controllers: [UserController],
   providers: [UserService],
   exports: [UserService],
 })

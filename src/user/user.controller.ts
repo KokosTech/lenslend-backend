@@ -1,6 +1,14 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Status, User } from '@prisma/client';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Status } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 import {
@@ -11,6 +19,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserService } from './user.service';
 import { ListingService } from '../listing/listing.service';
 import { ResponseListingDto } from '../listing/dto/response-listing.dto';
+import { RateUserDto } from './dtos/rate-user.dto';
 
 @Controller('user')
 @ApiTags('user')
@@ -39,10 +48,14 @@ export class UserController {
     type: [ResponseListingDto],
   })
   async getMyListings(@Req() req: RequestWithUser) {
-    return this.listingService.getListingsByUsername(req.user.username);
+    return this.listingService.findByUsername(req.user.username);
   }
 
   @Get('profile')
+  @ApiResponse({
+    status: 200,
+    type: [ResponsePublicProfileDto],
+  })
   async getProfiles(): Promise<ResponsePublicProfileDto[]> {
     return this.userService.getPublicProfiles();
   }
@@ -64,7 +77,7 @@ export class UserController {
     type: [ResponseListingDto],
   })
   async getProfileListings(@Param('username') username: string) {
-    return this.listingService.getListingsByUsername(username, Status.PUBLIC);
+    return this.listingService.findByUsername(username, Status.PUBLIC);
   }
 
   @Get()
@@ -72,7 +85,27 @@ export class UserController {
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiTags('admin')
-  async getUsers(): Promise<User[]> {
+  @ApiResponse({
+    status: 200,
+    type: [ResponseProfileDto],
+  })
+  async getUsers(): Promise<ResponseProfileDto[]> {
     return this.userService.findAll();
+  }
+
+  @Post('rate/:username')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({ type: RateUserDto })
+  @ApiResponse({
+    status: 200,
+    type: RateUserDto,
+  })
+  async rate(
+    @Req() req: RequestWithUser,
+    @Param('username') username: string,
+    @Body() rateUserDto: RateUserDto,
+  ) {
+    return this.userService.rate(req.user.uuid, username, rateUserDto);
   }
 }

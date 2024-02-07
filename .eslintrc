@@ -107,7 +107,6 @@
         ],
         "no-new-object": "error",
         "no-trailing-spaces": "error",
-        "no-underscore-dangle": "error",
         "no-unneeded-ternary": "error",
         "no-whitespace-before-property": "error",
         "object-curly-spacing": [
@@ -316,7 +315,6 @@
         ],
         "no-new-object": "error",
         "no-trailing-spaces": "error",
-        "no-underscore-dangle": "error",
         "no-unneeded-ternary": "error",
         "no-whitespace-before-property": "error",
         "object-curly-newline": [

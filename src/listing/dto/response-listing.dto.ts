@@ -1,88 +1,100 @@
-import { ListingType, State } from '@prisma/client';
+import { ListingType, State, Status } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { ResponseCategoryDto } from '../../category/dto/response-category.dto';
+import { ResponseMetaUserDto } from '../../user/dtos/response-meta-user.dto';
+import { ImageDto } from '../../common/dtos/image.dto';
+import { ResponseTagDto } from '../../tag/dto/response-tag.dto';
 
+@Exclude()
 export class ResponseListingDto {
+  @Expose()
   @ApiProperty()
   uuid: string;
 
+  @Expose()
   @ApiProperty()
   title: string;
 
+  @Expose()
   @ApiProperty()
   description: string;
 
+  @Expose()
   @ApiProperty()
   lat: number;
 
+  @Expose()
   @ApiProperty()
   lng: number;
 
-  @ApiProperty()
+  @Expose()
+  @ApiProperty({
+    type: ListingType,
+    enum: ListingType,
+    example: ListingType.PRODUCT,
+  })
   type: ListingType;
 
+  @Expose()
   @ApiProperty()
   price?: number;
 
-  @ApiProperty()
+  @Expose()
+  @ApiProperty({
+    type: State,
+    enum: State,
+    example: State.NEW,
+  })
   state?: State;
 
+  @Expose()
   @ApiProperty()
   rental?: number;
 
+  @Expose()
   @ApiProperty()
   negotiable: boolean;
 
-  @ApiProperty()
-  status: string;
+  @Expose()
+  @ApiProperty({
+    type: Status,
+    enum: Status,
+    example: Status.PUBLIC,
+  })
+  status: Status;
 
-  @ApiProperty()
-  category: {
-    uuid: string;
-    name: string;
-  };
+  @Expose()
+  @ApiProperty({
+    type: ResponseCategoryDto,
+  })
+  category: ResponseCategoryDto;
 
-  @ApiProperty()
-  user: {
-    uuid: string;
-    name: string;
-    username: string;
-    profile_pic?: string;
-  };
+  @Expose()
+  @ApiProperty({
+    type: ImageDto,
+    isArray: true,
+  })
+  images: ImageDto[];
 
-  @ApiProperty()
-  tags: [
-    {
-      uuid: string;
-      name: string;
-    },
-  ];
+  @Expose()
+  @ApiProperty({
+    type: ResponseMetaUserDto,
+  })
+  user: ResponseMetaUserDto;
 
-  @ApiProperty()
-  comments?: [
-    {
-      uuid: string;
-      content: string;
-      user: {
-        uuid: string;
-        name: string;
-        username: string;
-        profile_pic: string;
-      };
-      created_at: Date;
-      updated_at: Date;
-    },
-  ];
+  @Expose()
+  @ApiProperty({
+    type: ResponseTagDto,
+    isArray: true,
+  })
+  tags: ResponseTagDto[];
 
-  @ApiProperty()
-  ratings?: [
-    {
-      rating: number;
-    },
-  ];
-
+  @Expose()
   @ApiProperty()
   created_at: Date;
 
+  @Expose()
   @ApiProperty()
   updated_at: Date;
 }

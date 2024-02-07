@@ -12,7 +12,10 @@ import {
   RequestWithUser,
 } from '../../common/interfaces/RequestWithUser';
 import { Request } from 'express';
-import { ResourceContent, ResourceType } from '../../resource/resource.type';
+import {
+  ResourceContent,
+  ResourceType,
+} from '../../resource/types/resource.type';
 import { ResourceService } from '../../resource/resource.service';
 import { inArray } from '../../common/utils/inArray';
 import { getJwtToken } from '../../common/utils/getJwtToken';
@@ -51,7 +54,12 @@ export class PermissionsGuard implements CanActivate {
     );
 
     const request: RequestWithParamUuid = context.switchToHttp().getRequest();
-    const resourceId = request.params.uuid;
+    const resourceId = ['review', 'comment'].includes(resource)
+      ? request.params.sub_uuid ?? request.params.uuid
+      : request.params.uuid;
+
+    console.log('resource', resource);
+    console.log('resourceId', resourceId);
 
     return this.resourceService.findOneMeta(resource, resourceId);
   }

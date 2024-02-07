@@ -5,6 +5,8 @@ import {
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { Exclude, Expose } from 'class-transformer';
@@ -19,7 +21,11 @@ export class CreateUserDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(3)
+  @MaxLength(16)
+  @Matches(/^[a-z0-9._]+$/, {
+    message: 'username.invalid_characters',
+  })
   username: string;
 
   @Expose()
@@ -31,6 +37,7 @@ export class CreateUserDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(41)
   name: string;
 
   @Expose()

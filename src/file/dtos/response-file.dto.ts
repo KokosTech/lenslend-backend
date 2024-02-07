@@ -1,13 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export interface FileInterface {
-  url: string;
-  key: string;
-  public_url: string;
-}
-
-export class FileResponseDto {
+export class ResponseFileDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

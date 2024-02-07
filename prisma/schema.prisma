@@ -35,7 +35,6 @@ model User {
   listingComments   ListingComment[]
   listingsRatings   ListingRating[]
   listingReports    ListingReport[]
-  UserSavedListings UserSavedListings[]
   chats             Chat[]              @relation("ChatUsers")
   Chat              Chat?               @relation(fields: [chatUuid], references: [uuid])
   chatUuid          String?
@@ -46,6 +45,10 @@ model User {
   PlaceReview       PlaceReview[]
   PlaceReport       PlaceReport[]
   PlaceReviewReply  PlaceReviewReply[]
+  UserSavedListings UserSavedListings[]
+  UserSavedPlaces   UserSavedPlaces[]
+  users_rated       UserRating[]        @relation("user_rated")
+  users_rated_from  UserRating[]        @relation("user")
 }
 
 model UserSettings {
@@ -69,6 +72,33 @@ model UserSavedListings {
   user_uuid    String
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
+
+  @@unique([user_uuid, listing_uuid])
+}
+
+model UserSavedPlaces {
+  uuid       String    @id @default(uuid())
+  created_at DateTime  @default(now())
+  deleted_at DateTime?
+  user       User      @relation(fields: [user_uuid], references: [uuid])
+  user_uuid  String
+  place      Place     @relation(fields: [place_uuid], references: [uuid])
+  place_uuid String
+
+  @@unique([user_uuid, place_uuid])
+}
+
+model UserRating {
+  uuid            String    @id @default(uuid())
+  rating          Int
+  user_rated      User      @relation("user_rated", fields: [user_rated_uuid], references: [uuid])
+  user_rated_uuid String
+  created_at      DateTime  @default(now())
+  deleted_at      DateTime?
+  user            User      @relation("user", fields: [user_uuid], references: [uuid])
+  user_uuid       String
+
+  @@unique([user_uuid, user_rated_uuid])
 }
 
 // =============== Listing Models ===============
@@ -152,6 +182,7 @@ model Tag {
 model ListingComment {
   uuid         String    @id @default(uuid())
   content      String
+  status       Status    @default(PUBLIC)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
   deleted_at   DateTime?
@@ -171,6 +202,8 @@ model ListingRating {
   user_uuid    String
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
+
+  @@unique([user_uuid, listing_uuid])
 }
 
 model ListingReport {
@@ -187,28 +220,29 @@ model ListingReport {
 // =============== Places Models ===============
 
 model Place {
-  uuid         String         @id @default(uuid())
-  name         String
-  description  String
-  categoryUuid String
-  category     PlaceCategory  @relation(fields: [categoryUuid], references: [uuid])
-  lat          Float
-  lng          Float
-  icon         String
-  status       Status         @default(PUBLIC)
-  creatorUuid  String
-  creator      User           @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
-  ownerUuid    String
-  owner        User           @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
-  deleted_at   DateTime?
-  services     PlaceService[]
-  images       PlaceImage[]
-  tags         PlaceTag[]
-  reviews      PlaceReview[]
-  reports      PlaceReport[]
-  visitors     PlaceVisitor[] @relation("PlaceVisitors")
+  uuid            String            @id @default(uuid())
+  name            String
+  description     String
+  categoryUuid    String
+  category        PlaceCategory     @relation(fields: [categoryUuid], references: [uuid])
+  lat             Float
+  lng             Float
+  icon            String
+  status          Status            @default(PUBLIC)
+  creatorUuid     String
+  creator         User              @relation(fields: [creatorUuid], references: [uuid], name: "PlaceCreator")
+  ownerUuid       String?
+  owner           User?             @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  deleted_at      DateTime?
+  services        PlaceService[]
+  images          PlaceImage[]
+  tags            PlaceTag[]
+  reviews         PlaceReview[]
+  reports         PlaceReport[]
+  visitors        PlaceVisitor[]    @relation("PlaceVisitors")
+  UserSavedPlaces UserSavedPlaces[]
 
   @@unique([lat, lng])
 }
@@ -227,18 +261,14 @@ model PlaceCategory {
 }
 
 model Service {
-  uuid          String         @id @default(uuid())
-  name          String
-  icon          String
-  color         String
-  bg_color      String
-  dark_color    String
-  dark_bg_color String
-  status        Status         @default(PUBLIC)
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
-  deleted_at    DateTime?
-  PlaceService  PlaceService[]
+  uuid         String         @id @default(uuid())
+  name         String
+  icon         String
+  status       Status         @default(PUBLIC)
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  deleted_at   DateTime?
+  PlaceService PlaceService[]
 }
 
 model PlaceService {
@@ -281,12 +311,14 @@ model PlaceVisitor {
   userUuid   String
   place      Place     @relation("PlaceVisitors", fields: [placeUuid], references: [uuid])
   placeUuid  String
+
+  @@unique([placeUuid, userUuid])
 }
 
 model PlaceReview {
   uuid             String             @id @default(uuid())
   rating           Int
-  content          String
+  content          String?
   status           Status             @default(PUBLIC)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
@@ -296,6 +328,8 @@ model PlaceReview {
   place            Place              @relation(fields: [placeUuid], references: [uuid])
   placeUuid        String
   PlaceReviewReply PlaceReviewReply[]
+
+  @@unique([placeUuid, userUuid])
 }
 
 model PlaceReviewReply {
@@ -322,7 +356,7 @@ model PlaceReport {
   placeUuid  String
 }
 
-// =============== Chat Models =============== -> MQTT Chat
+// =============== Chat Models ===============
 
 model Chat {
   uuid       String    @id @default(uuid())
