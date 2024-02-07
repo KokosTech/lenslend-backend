@@ -2,6 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { plainToClass, plainToInstance } from 'class-transformer';
+import { Category } from './entities/category.entity';
+import { ResponseCategoryDto } from './dto/response-category.dto';
+import { ExpandedCategorySelect } from './selects/listing-category.select';
+import { ExpandedPlaceCategorySelect } from './selects/place-category.select';
+import { ResponseExpandedCategoryDto } from './dto/response-expanded-category.dto';
+import { CategoryType } from './types/category.type';
 
 // TODO: Remove infinite recursion
 
@@ -9,123 +16,84 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create({ name, parent_uuid, type }: CreateCategoryDto) {
-    if (type === 'LISTING') {
-      return this.prisma.category.create({
-        data: {
-          name,
-          parent_uuid,
-        },
-      });
-    } else {
-      return this.prisma.placeCategory.create({
-        data: {
-          name,
-          parent_uuid,
-        },
-      });
-    }
+  async create(
+    createCategoryDto: CreateCategoryDto,
+    type: CategoryType,
+  ): Promise<ResponseCategoryDto> {
+    const category = plainToClass(Category, createCategoryDto);
+
+    const result =
+      type === 'LISTING'
+        ? await this.prisma.category.create({
+            data: {
+              ...category,
+            },
+          })
+        : await this.prisma.placeCategory.create({
+            data: {
+              ...category,
+            },
+          });
+
+    return plainToClass(ResponseCategoryDto, result);
   }
 
-  async findAll(type: 'LISTING' | 'PLACE') {
-    if (type === 'LISTING') {
-      return this.prisma.category.findMany({
-        where: {
-          parent_uuid: null,
-        },
-        orderBy: {
-          name: 'asc',
-        },
-        include: {
-          sub_categories: {
+  async findAll(type: CategoryType): Promise<ResponseExpandedCategoryDto[]> {
+    const categories =
+      type === 'LISTING'
+        ? await this.prisma.category.findMany({
+            select: ExpandedCategorySelect,
+            where: {
+              parent_uuid: null,
+            },
             orderBy: {
               name: 'asc',
             },
-            include: {
-              sub_categories: {
-                orderBy: {
-                  name: 'asc',
-                },
-              },
+          })
+        : await this.prisma.placeCategory.findMany({
+            select: ExpandedPlaceCategorySelect,
+            where: {
+              parent_uuid: null,
             },
-          },
-        },
-      });
-    } else {
-      return this.prisma.placeCategory.findMany({
-        where: {
-          parent_uuid: null,
-        },
-        orderBy: {
-          name: 'asc',
-        },
-        include: {
-          sub_categories: {
             orderBy: {
               name: 'asc',
             },
-            include: {
-              sub_categories: {
-                orderBy: {
-                  name: 'asc',
-                },
-              },
-            },
-          },
-        },
-      });
-    }
+          });
+
+    // this is a workaround to avoid circular dependency
+    return plainToInstance(ResponseExpandedCategoryDto, categories, {
+      excludeExtraneousValues: true,
+      enableCircularCheck: true,
+    }) as unknown as ResponseExpandedCategoryDto[];
   }
 
-  async findOne(uuid: string, type: 'LISTING' | 'PLACE') {
-    if (type === 'LISTING') {
-      return this.prisma.category.findUniqueOrThrow({
-        where: {
-          uuid,
-        },
-        include: {
-          sub_categories: {
-            orderBy: {
-              name: 'asc',
+  async findOne(
+    uuid: string,
+    type: CategoryType,
+  ): Promise<ResponseExpandedCategoryDto> {
+    const category =
+      type === 'LISTING'
+        ? await this.prisma.category.findUniqueOrThrow({
+            select: ExpandedCategorySelect,
+            where: {
+              uuid,
             },
-            include: {
-              sub_categories: {
-                orderBy: {
-                  name: 'asc',
-                },
-              },
+          })
+        : await this.prisma.placeCategory.findUniqueOrThrow({
+            select: ExpandedPlaceCategorySelect,
+            where: {
+              uuid,
             },
-          },
-        },
-      });
-    } else {
-      return this.prisma.placeCategory.findUniqueOrThrow({
-        where: {
-          uuid,
-        },
-        include: {
-          sub_categories: {
-            orderBy: {
-              name: 'asc',
-            },
-            include: {
-              sub_categories: {
-                orderBy: {
-                  name: 'asc',
-                },
-              },
-            },
-          },
-        },
-      });
-    }
+          });
+
+    return plainToClass(ResponseExpandedCategoryDto, category);
   }
 
   async update(
     uuid: string,
-    type: 'LISTING' | 'PLACE',
+    type: CategoryType,
     updateCategoryDto: UpdateCategoryDto,
-  ) {
+  ): Promise<ResponseCategoryDto> {
     if (type === 'LISTING') {
       return this.prisma.category.update({
         where: {
@@ -163,7 +131,7 @@ export class CategoryService {
     return uuidsToDelete;
   };
 
-  async remove(uuid: string, type: 'LISTING' | 'PLACE') {
+  async remove(uuid: string, type: CategoryType) {
     if (type === 'LISTING') {
       // delete all sub categories
       const uuidsToDelete = await this.recursiveDelete(uuid);

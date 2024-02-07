@@ -1,31 +1,111 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { User } from '@prisma/client';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Status } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  ResponseProfileDto,
+  ResponsePublicProfileDto,
+} from './dtos/response-user.dto';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserService } from './user.service';
+import { ListingService } from '../listing/listing.service';
+import { ResponseListingDto } from '../listing/dto/response-listing.dto';
+import { RateUserDto } from './dtos/rate-user.dto';
 
 @Controller('user')
-// @UseGuards(JwtAuthGuard)
 @ApiTags('user')
-@ApiBearerAuth()
 export class UserController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly listingService: ListingService,
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@Req() req: RequestWithUser): Promise<User> {
-    return req.user;
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    type: ResponseProfileDto,
+  })
+  async getMe(@Req() req: RequestWithUser): Promise<ResponseProfileDto> {
+    return this.userService.getUserProfile(req.user.uuid);
+  }
+
+  @Get('me/listing')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    type: [ResponseListingDto],
+  })
+  async getMyListings(@Req() req: RequestWithUser) {
+    return this.listingService.findByUsername(req.user.username);
+  }
+
+  @Get('profile')
+  @ApiResponse({
+    status: 200,
+    type: [ResponsePublicProfileDto],
+  })
+  async getProfiles(): Promise<ResponsePublicProfileDto[]> {
+    return this.userService.getPublicProfiles();
+  }
+
+  @Get(':username')
+  @ApiResponse({
+    status: 200,
+    type: ResponsePublicProfileDto,
+  })
+  async getProfile(
+    @Param('username') username: string,
+  ): Promise<ResponsePublicProfileDto> {
+    return this.userService.getPublicProfile(username);
+  }
+
+  @Get(':username/listing')
+  @ApiResponse({
+    status: 200,
+    type: [ResponseListingDto],
+  })
+  async getProfileListings(@Param('username') username: string) {
+    return this.listingService.findByUsername(username, Status.PUBLIC);
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getUsers(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  @Roles('ADMIN')
+  @ApiBearerAuth()
+  @ApiTags('admin')
+  @ApiResponse({
+    status: 200,
+    type: [ResponseProfileDto],
+  })
+  async getUsers(): Promise<ResponseProfileDto[]> {
+    return this.userService.findAll();
   }
 
-  @Post()
-  async createUser(@Body() data: User): Promise<User> {
-    return this.prisma.user.create({ data });
+  @Post('rate/:username')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiBody({ type: RateUserDto })
+  @ApiResponse({
+    status: 200,
+    type: RateUserDto,
+  })
+  async rate(
+    @Req() req: RequestWithUser,
+    @Param('username') username: string,
+    @Body() rateUserDto: RateUserDto,
+  ) {
+    return this.userService.rate(req.user.uuid, username, rateUserDto);
   }
 }

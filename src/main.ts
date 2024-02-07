@@ -36,10 +36,7 @@ async function bootstrap() {
     .setDescription('The LensLend API description')
     .setVersion(process.env.VERSION || '0.0.0')
     .addBearerAuth()
-    .addSecurity('refresh_token', {
-      type: 'http',
-      scheme: 'bearer',
-    })
+    .addBearerAuth({ type: 'http' }, 'refresh-token')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
