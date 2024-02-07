@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Status, User } from '@prisma/client';
+import { Status } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RequestWithUser } from '../common/interfaces/RequestWithUser';
 import {
@@ -85,7 +85,11 @@ export class UserController {
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiTags('admin')
-  async getUsers(): Promise<User[]> {
+  @ApiResponse({
+    status: 200,
+    type: [ResponseProfileDto],
+  })
+  async getUsers(): Promise<ResponseProfileDto[]> {
     return this.userService.findAll();
   }
 

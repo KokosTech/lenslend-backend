@@ -21,8 +21,9 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async findAll(): Promise<ResponseProfileDto[]> {
+    const users = await this.prisma.user.findMany();
+    return plainToInstance(ResponseProfileDto, users);
   }
 
   async findByEmail(email: string): Promise<User | null> {
