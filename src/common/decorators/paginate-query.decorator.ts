@@ -1,14 +1,14 @@
-import { ApiParam } from '@nestjs/swagger';
+import { ApiQuery } from '@nestjs/swagger';
 import { applyDecorators } from '@nestjs/common';
 
-export const ApiParamPaginated = (page = 1, limit = 10) =>
+export const ApiQueryPaginated = (page = 1, limit = 10) =>
   applyDecorators(
-    ApiParam({
+    ApiQuery({
       name: 'page',
       required: false,
       example: page,
     }),
-    ApiParam({
+    ApiQuery({
       name: 'limit',
       required: false,
       example: limit,

@@ -13,7 +13,9 @@ import {
   IsUUID,
   Length,
   Max,
+  MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -92,10 +94,10 @@ export class CreateListingDto {
   @IsString({
     each: true,
   })
-  @Min(3, {
+  @MinLength(3, {
     each: true,
   })
-  @Max(20, {
+  @MaxLength(20, {
     each: true,
   })
   @ArrayNotEmpty()

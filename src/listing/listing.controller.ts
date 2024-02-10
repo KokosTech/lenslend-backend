@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
   ApiBody,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -32,7 +34,7 @@ import { Paginate } from '../common/decorators/paginate.decorator';
 import { Pagination } from '../common/pagination';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
 import { ApiOkResponsePaginated } from '../common/decorators/paginate-swagger.decorator';
-import { ApiParamPaginated } from '../common/decorators/paginate-query.decorator';
+import { ApiQueryPaginated } from '../common/decorators/paginate-query.decorator';
 
 @Controller('listing')
 @ApiTags('listing')
@@ -58,12 +60,17 @@ export class ListingController {
   }
 
   @Get()
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
+  @ApiQuery({
+    name: 'category',
+    required: false,
+  })
   @ApiOkResponsePaginated(ResponseShortListingDto)
   async findAll(
     @Paginate() pagination: Pagination,
+    @Query('category') category?: string,
   ): Promise<PaginationResultDto<ResponseShortListingDto>> {
-    return this.listingService.findAll(pagination);
+    return this.listingService.findAll(pagination, category);
   }
 
   @Get(':uuid')

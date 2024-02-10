@@ -18,7 +18,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UserService } from './user.service';
 import { ListingService } from '../listing/listing.service';
 import { RateUserDto } from './dtos/rate-user.dto';
-import { ApiParamPaginated } from '../common/decorators/paginate-query.decorator';
+import { ApiQueryPaginated } from '../common/decorators/paginate-query.decorator';
 import { ApiOkResponsePaginated } from '../common/decorators/paginate-swagger.decorator';
 import { ResponseShortListingDto } from '../listing/dto/response-short-listing.dto';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
@@ -51,7 +51,7 @@ export class UserController {
   @Get('me/listing')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseShortListingDto)
   async getMyListings(
     @Req() req: RequestWithUser,
@@ -63,7 +63,7 @@ export class UserController {
   @Get('me/place')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseCardPlaceDto)
   async getMyPlaces(
     @Req() req: RequestWithUser,
@@ -79,7 +79,7 @@ export class UserController {
   }
 
   @Get('profile')
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponsePublicProfileDto)
   async getProfiles(
     @Paginate() pagination: Pagination,
@@ -99,7 +99,7 @@ export class UserController {
   }
 
   @Get(':username/listing')
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseShortListingDto)
   async getProfileListings(
     @Param('username') username: string,
@@ -113,7 +113,7 @@ export class UserController {
   }
 
   @Get(':username/place')
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseCardPlaceDto)
   async getProfilePlaces(
     @Param('username') username: string,
@@ -132,7 +132,7 @@ export class UserController {
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiTags('admin')
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseProfileDto)
   async getUsers(
     @Paginate() pagination: Pagination,

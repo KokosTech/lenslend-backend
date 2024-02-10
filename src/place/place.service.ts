@@ -18,14 +18,15 @@ import { ResponseSavedDto } from '../listing/dto/response-saved.dto';
 import { UserService } from '../user/user.service';
 import { VisitorDto } from '../common/types/visitor';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
-import { commonWhereClause } from '../common/common.where';
 import { Pagination } from '../common/pagination';
+import { CategoryService } from '../category/category.service';
 
 @Injectable()
 export class PlaceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async create(
@@ -102,12 +103,19 @@ export class PlaceService {
     format?: 'short' | 'card',
     username?: string,
     status?: Status,
+    category?: string,
   ): Promise<
     PaginationResultDto<ResponseCardPlaceDto | ResponseShortPlaceDto>
   > {
-    const whereClause = username
+    const categories = category
+      ? await this.categoryService.findOneAndSubCategoriesUuids(
+          category,
+          'PLACE',
+        )
+      : null;
+
+    const whereClauseOne = username
       ? {
-          // if status is not provided, get all places
           status: status || undefined,
           OR: [
             {
@@ -121,8 +129,26 @@ export class PlaceService {
               },
             },
           ],
+          deleted_at: null,
         }
-      : commonWhereClause;
+      : {
+          status: Status.PUBLIC,
+          deleted_at: null,
+          creator: {
+            deleted_at: null,
+          },
+        };
+
+    const whereClause = {
+      ...whereClauseOne,
+      category: categories
+        ? {
+            uuid: {
+              in: categories,
+            },
+          }
+        : undefined,
+    };
 
     const totalCount = await this.prisma.place.count({
       where: whereClause,

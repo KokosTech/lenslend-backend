@@ -8,6 +8,7 @@ import { ServiceModule } from './service/service.module';
 import { AuthModule } from '../auth/auth.module';
 import { ResourceModule } from '../resource/resource.module';
 import { UserModule } from '../user/user.module';
+import { CategoryModule } from '../category/category.module';
 
 @Module({
   controllers: [PlaceController],
@@ -17,6 +18,7 @@ import { UserModule } from '../user/user.module';
     ReviewModule,
     PrismaModule,
     ServiceModule,
+    forwardRef(() => CategoryModule),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
     forwardRef(() => ResourceModule),

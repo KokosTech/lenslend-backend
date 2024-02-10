@@ -7,6 +7,7 @@ import { ReportModule } from './report/report.module';
 import { AuthModule } from '../auth/auth.module';
 import { ResourceModule } from '../resource/resource.module';
 import { UserModule } from '../user/user.module';
+import { CategoryModule } from '../category/category.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserModule } from '../user/user.module';
     CommentModule,
     ReportModule,
     ResourceModule,
+    forwardRef(() => CategoryModule),
     forwardRef(() => AuthModule),
     forwardRef(() => UserModule),
   ],

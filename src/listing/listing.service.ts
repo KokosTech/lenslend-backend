@@ -16,12 +16,14 @@ import { UserService } from '../user/user.service';
 import { Pagination } from '../common/pagination';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
 import { commonWhereClause } from '../common/common.where';
+import { CategoryService } from '../category/category.service';
 
 @Injectable()
 export class ListingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UserService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async create(
@@ -86,14 +88,37 @@ export class ListingService {
 
   async findAll(
     paginate: Pagination,
+    category?: string,
   ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    const categories = category
+      ? await this.categoryService.findOneAndSubCategoriesUuids(
+          category,
+          'LISTING',
+        )
+      : null;
+
+    console.log('========= category =========');
+    console.log('categories', categories);
+
+    const whereClause =
+      category && categories
+        ? {
+            status: Status.PUBLIC,
+            deleted_at: null,
+            user: {
+              deleted_at: null,
+            },
+            category: { uuid: { in: categories } },
+          }
+        : commonWhereClause;
+
     const totalCount = await this.prisma.listing.count({
-      where: commonWhereClause,
+      where: whereClause,
     });
 
     const listings = await this.prisma.listing.findMany({
       select: ShortListingSelect,
-      where: commonWhereClause,
+      where: whereClause,
       orderBy: {
         created_at: 'desc',
       },
@@ -121,6 +146,10 @@ export class ListingService {
     const listing = await this.prisma.listing.findUniqueOrThrow({
       where: {
         uuid,
+        deleted_at: null,
+        user: {
+          deleted_at: null,
+        },
       },
       select: ListingSelect,
     });
@@ -180,8 +209,16 @@ export class ListingService {
       take: paginate.limit,
     });
 
+    const result = listings.map((listing) => {
+      const [thumbnail] = listing.images;
+      return {
+        ...listing,
+        thumbnail,
+      };
+    });
+
     return {
-      data: plainToInstance(ResponseShortListingDto, listings),
+      data: plainToInstance(ResponseShortListingDto, result),
       page: 1,
       limit: 10,
       totalCount,

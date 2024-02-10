@@ -89,6 +89,51 @@ export class CategoryService {
     return plainToClass(ResponseExpandedCategoryDto, category);
   }
 
+  async findOneAndSubCategoriesUuids(
+    uuid: string,
+    type: CategoryType,
+  ): Promise<string[]> {
+    const category =
+      type === 'LISTING'
+        ? await this.prisma.category.findUniqueOrThrow({
+            select: {
+              uuid: true,
+              sub_categories: {
+                select: {
+                  uuid: true,
+                },
+              },
+            },
+            where: {
+              uuid,
+            },
+          })
+        : await this.prisma.placeCategory.findUniqueOrThrow({
+            select: {
+              uuid: true,
+              sub_categories: {
+                select: {
+                  uuid: true,
+                },
+              },
+            },
+            where: {
+              uuid,
+            },
+          });
+
+    const otherSubCategories = category.sub_categories.map((subCategory) =>
+      this.findOneAndSubCategoriesUuids(subCategory.uuid, type),
+    );
+
+    const subCategories = await Promise.all(otherSubCategories);
+
+    return [
+      category.uuid,
+      ...subCategories.reduce((acc, val) => acc.concat(val), []),
+    ];
+  }
+
   async update(
     uuid: string,
     type: CategoryType,

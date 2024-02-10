@@ -25,7 +25,7 @@ import { ResponseReviewDto } from './dto/response-review.dto';
 import { PermissionsGuard } from '../../auth/guards/permissions-guard.service';
 import { Action } from '../../auth/decorators/action.decorator';
 import { Resource } from '../../auth/decorators/resource.decorator';
-import { ApiParamPaginated } from '../../common/decorators/paginate-query.decorator';
+import { ApiQueryPaginated } from '../../common/decorators/paginate-query.decorator';
 import { ApiOkResponsePaginated } from '../../common/decorators/paginate-swagger.decorator';
 import { PaginationResultDto } from '../../common/dtos/pagination.dto';
 import { Paginate } from '../../common/decorators/paginate.decorator';
@@ -60,7 +60,7 @@ export class ReviewController {
   }
 
   @Get()
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponseReviewDto)
   async findAll(
     @Param('uuid') uuid: string,

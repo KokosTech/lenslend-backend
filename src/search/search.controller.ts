@@ -5,11 +5,11 @@ import { Pagination } from '../common/pagination';
 import { Paginate } from '../common/decorators/paginate.decorator';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
 import { ResponseCardUserDto } from '../user/dtos/response-card-user.dto';
-import { ResponseListingDto } from '../listing/dto/response-listing.dto';
 import { ResponseCardPlaceDto } from '../place/dto/response-card-place.dto';
 import { SearchAllDto } from './dto/search-all.dto';
-import { ApiParamPaginated } from '../common/decorators/paginate-query.decorator';
+import { ApiQueryPaginated } from '../common/decorators/paginate-query.decorator';
 import { ApiOkResponsePaginated } from '../common/decorators/paginate-swagger.decorator';
+import { ResponseShortListingDto } from '../listing/dto/response-short-listing.dto';
 
 @Controller('search')
 @ApiTags('search')
@@ -28,9 +28,9 @@ export class SearchController {
     type: 'enum',
     enum: ['Freelancers', 'Equipment', 'Places'],
   })
-  @ApiParamPaginated()
+  @ApiQueryPaginated()
   @ApiOkResponsePaginated(
-    ResponseListingDto || ResponseCardPlaceDto || ResponseCardUserDto,
+    ResponseShortListingDto || ResponseCardPlaceDto || ResponseCardUserDto,
   )
   @ApiOkResponse({ type: SearchAllDto })
   async search(
@@ -39,7 +39,7 @@ export class SearchController {
     @Query('category') category?: 'Freelancers' | 'Equipment' | 'Places',
   ): Promise<
     | PaginationResultDto<
-        ResponseListingDto | ResponseCardPlaceDto | ResponseCardUserDto
+        ResponseShortListingDto | ResponseCardPlaceDto | ResponseCardUserDto
       >
     | SearchAllDto
   > {
