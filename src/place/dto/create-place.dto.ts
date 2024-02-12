@@ -11,8 +11,8 @@ import {
   IsUUID,
   Length,
   Matches,
-  Max,
-  Min,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { emojiRegex } from '../../emojiRegex';
@@ -74,10 +74,10 @@ export class CreatePlaceDto {
   @IsString({
     each: true,
   })
-  @Min(3, {
+  @MinLength(3, {
     each: true,
   })
-  @Max(20, {
+  @MaxLength(20, {
     each: true,
   })
   @ArrayNotEmpty()

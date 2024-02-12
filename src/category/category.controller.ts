@@ -80,7 +80,7 @@ export class CategoryController {
   })
   async findOne(
     @Param('type') type: CategoryType,
-    @Param('id') id: string,
+    @Param('uuid') id: string,
   ): Promise<ResponseExpandedCategoryDto> {
     return this.categoryService.findOne(id, type);
   }
