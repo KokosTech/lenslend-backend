@@ -27,7 +27,7 @@ model User {
   verified_email    Boolean             @default(false)
   verified_phone    Boolean             @default(false)
   created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
+  updated_at        DateTime            @default(now()) @updatedAt
   deleted_at        DateTime?
   settings          UserSettings?
   savedListings     Listing[]           @relation("SavedListings")
@@ -36,7 +36,6 @@ model User {
   listingsRatings   ListingRating[]
   listingReports    ListingReport[]
   chats             Chat[]              @relation("ChatUsers")
-  Chat              Chat?               @relation(fields: [chatUuid], references: [uuid])
   chatUuid          String?
   Message           Message[]
   PlaceCreator      Place[]             @relation("PlaceCreator")
@@ -58,7 +57,7 @@ model UserSettings {
   in_app_notifications Boolean   @default(true)
   email_notifications  Boolean   @default(true)
   created_at           DateTime  @default(now())
-  updated_at           DateTime  @updatedAt
+  updated_at           DateTime  @default(now()) @updatedAt
   deleted_at           DateTime?
   user                 User      @relation(fields: [user_uuid], references: [uuid])
   user_uuid            String    @unique
@@ -116,7 +115,7 @@ model Listing {
   negotiable        Boolean             @default(false)
   status            Status              @default(PUBLIC)
   created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
+  updated_at        DateTime            @default(now()) @updatedAt
   deleted_at        DateTime?
   user              User                @relation("UserListings", fields: [user_uuid], references: [uuid])
   user_uuid         String
@@ -137,7 +136,7 @@ model Category {
   uuid           String     @id @default(uuid())
   name           String
   created_at     DateTime   @default(now())
-  updated_at     DateTime   @updatedAt
+  updated_at     DateTime   @default(now()) @updatedAt
   deleted_at     DateTime?
   parent         Category?  @relation("SubCategories", fields: [parent_uuid], references: [uuid])
   parent_uuid    String?
@@ -152,7 +151,7 @@ model ListingImage {
   order        Int?
   status       Status    @default(PUBLIC)
   created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  updated_at   DateTime  @default(now()) @updatedAt
   deleted_at   DateTime?
   listing      Listing   @relation(fields: [listing_uuid], references: [uuid])
   listing_uuid String
@@ -172,7 +171,7 @@ model Tag {
   name       String       @unique
   status     Status       @default(PUBLIC)
   created_at DateTime     @default(now())
-  updated_at DateTime     @updatedAt
+  updated_at DateTime     @default(now()) @updatedAt
   deleted_at DateTime?
   listings   Listing[]
   ListingTag ListingTag[]
@@ -184,7 +183,7 @@ model ListingComment {
   content      String
   status       Status    @default(PUBLIC)
   created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  updated_at   DateTime  @default(now()) @updatedAt
   deleted_at   DateTime?
   user         User      @relation(fields: [user_uuid], references: [uuid])
   user_uuid    String
@@ -196,7 +195,7 @@ model ListingRating {
   uuid         String    @id @default(uuid())
   rating       Int
   created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  updated_at   DateTime  @default(now()) @updatedAt
   deleted_at   DateTime?
   user         User      @relation(fields: [user_uuid], references: [uuid])
   user_uuid    String
@@ -234,7 +233,7 @@ model Place {
   ownerUuid       String?
   owner           User?             @relation(fields: [ownerUuid], references: [uuid], name: "PlaceOwner")
   created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
+  updated_at      DateTime          @default(now()) @updatedAt
   deleted_at      DateTime?
   services        PlaceService[]
   images          PlaceImage[]
@@ -252,7 +251,7 @@ model PlaceCategory {
   name           String
   status         Status          @default(PUBLIC)
   created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
+  updated_at     DateTime        @default(now()) @updatedAt
   deleted_at     DateTime?
   parent         PlaceCategory?  @relation("SubCategories", fields: [parent_uuid], references: [uuid])
   parent_uuid    String?
@@ -266,7 +265,7 @@ model Service {
   icon         String
   status       Status         @default(PUBLIC)
   created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
+  updated_at   DateTime       @default(now()) @updatedAt
   deleted_at   DateTime?
   PlaceService PlaceService[]
 }
@@ -288,7 +287,7 @@ model PlaceImage {
   order      Int?
   status     Status    @default(PUBLIC)
   created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  updated_at DateTime  @default(now()) @updatedAt
   deleted_at DateTime?
   place      Place     @relation(fields: [placeUuid], references: [uuid])
   placeUuid  String
@@ -321,7 +320,7 @@ model PlaceReview {
   content          String?
   status           Status             @default(PUBLIC)
   created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
+  updated_at       DateTime           @default(now()) @updatedAt
   deleted_at       DateTime?
   user             User               @relation(fields: [userUuid], references: [uuid])
   userUuid         String
@@ -337,7 +336,7 @@ model PlaceReviewReply {
   content    String
   status     Status      @default(PUBLIC)
   created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
+  updated_at DateTime    @default(now()) @updatedAt
   deleted_at DateTime?
   user       User        @relation(fields: [userUuid], references: [uuid])
   userUuid   String
@@ -361,23 +360,23 @@ model PlaceReport {
 model Chat {
   uuid       String    @id @default(uuid())
   created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  updated_at DateTime  @default(now()) @updatedAt
   deleted_at DateTime?
   users      User[]    @relation("ChatUsers")
-  User       User[]
+  messages   Message[]
 }
 
 model Message {
   uuid       String    @id @default(uuid())
   content    String
   created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  updated_at DateTime  @default(now()) @updatedAt
   deleted_at DateTime?
   user       User      @relation(fields: [user_uuid], references: [uuid])
   user_uuid  String
+  chat       Chat      @relation(fields: [chat_uuid], references: [uuid])
+  chat_uuid  String
 }
-
-// ========= History Models =========
 
 // =============== Enums ===============
 
