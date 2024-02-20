@@ -78,6 +78,30 @@ export class UserController {
     return places as PaginationResultDto<ResponseCardPlaceDto>;
   }
 
+  @Get('me/saved/listing')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQueryPaginated()
+  @ApiOkResponsePaginated(ResponseShortListingDto)
+  async getSavedListings(
+    @Req() req: RequestWithUser,
+    @Paginate() pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    return this.listingService.getSavedListings(pagination, req.user.uuid);
+  }
+
+  @Get('me/saved/place')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiQueryPaginated()
+  @ApiOkResponsePaginated(ResponseCardPlaceDto)
+  async getSavedPlaces(
+    @Req() req: RequestWithUser,
+    @Paginate() pagination: Pagination,
+  ): Promise<PaginationResultDto<ResponseCardPlaceDto>> {
+    return this.placeService.getSavedPlaces(pagination, req.user.uuid);
+  }
+
   @Get('profile')
   @ApiQueryPaginated()
   @ApiOkResponsePaginated(ResponsePublicProfileDto)

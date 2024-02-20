@@ -16,9 +16,7 @@ export class RefreshJwtStrategy extends PassportStrategy(
     });
   }
 
-  async validate(payload: { id: string; tokenId: string }) {
-    console.warn(payload);
-
+  validate(payload: { id: string; tokenId: string }) {
     return {
       id: payload.id,
       tokenId: payload.tokenId,

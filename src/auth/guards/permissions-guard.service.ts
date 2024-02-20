@@ -58,9 +58,6 @@ export class PermissionsGuard implements CanActivate {
       ? request.params.sub_uuid ?? request.params.uuid
       : request.params.uuid;
 
-    console.log('resource', resource);
-    console.log('resourceId', resourceId);
-
     return this.resourceService.findOneMeta(resource, resourceId);
   }
 

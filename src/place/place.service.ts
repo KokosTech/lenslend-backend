@@ -20,6 +20,7 @@ import { VisitorDto } from '../common/types/visitor';
 import { PaginationResultDto } from '../common/dtos/pagination.dto';
 import { Pagination } from '../common/pagination';
 import { CategoryService } from '../category/category.service';
+import { ResponseCardUserDto } from '../user/dtos/response-card-user.dto';
 
 @Injectable()
 export class PlaceService {
@@ -317,6 +318,44 @@ export class PlaceService {
     };
   }
 
+  async getSavedPlaces(
+    pagination: Pagination,
+    userUuid: string,
+  ): Promise<PaginationResultDto<ResponseCardPlaceDto>> {
+    const totalCount = await this.prisma.userSavedPlaces.count({
+      where: {
+        user_uuid: userUuid,
+        deleted_at: null,
+      },
+    });
+
+    const savedPlaces = await this.prisma.userSavedPlaces.findMany({
+      select: {
+        place: {
+          select: CardPlaceSelect,
+        },
+      },
+      where: {
+        user_uuid: userUuid,
+        deleted_at: null,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
+    });
+
+    return {
+      data: plainToInstance(
+        ResponseCardPlaceDto,
+        savedPlaces.map((p) => p.place),
+      ),
+      ...pagination,
+      totalCount,
+    };
+  }
+
   async here(uuid: string, userUuid: string): Promise<ResponseHereDto> {
     const existingHere = await this.prisma.placeVisitor.findUnique({
       where: {
@@ -356,6 +395,61 @@ export class PlaceService {
 
     return {
       here: !res.deleted_at,
+    };
+  }
+
+  // get all users that are here
+  async getHere(
+    pagination: Pagination,
+    uuid: string,
+  ): Promise<PaginationResultDto<ResponseCardUserDto>> {
+    const totalCount = await this.prisma.placeVisitor.count({
+      where: {
+        placeUuid: uuid,
+        deleted_at: null,
+      },
+    });
+
+    const here = await this.prisma.placeVisitor.findMany({
+      select: {
+        user: {
+          select: {
+            uuid: true,
+            name: true,
+            username: true,
+            profile_pic: true,
+            created_at: true,
+          },
+        },
+        created_at: true,
+      },
+      where: {
+        placeUuid: uuid,
+        deleted_at: null,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      skip: pagination.page * pagination.limit - pagination.limit,
+      take: pagination.limit,
+    });
+
+    // calc rating for each user
+    const ratingsPromise = here.map(async (visitor) => {
+      const newVisitor = plainToInstance(VisitorDto, visitor);
+      return this.userService.getUserRating(newVisitor.user.uuid);
+    });
+
+    const ratings = await Promise.all(ratingsPromise);
+    const result = here.map((visitor, i) => ({
+      ...visitor.user,
+      rating: roundRating(ratings[i]),
+    }));
+
+    return {
+      data: plainToInstance(ResponseCardUserDto, result),
+      ...pagination,
+      totalCount,
     };
   }
 

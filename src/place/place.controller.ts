@@ -40,6 +40,7 @@ import { ResponseShortListingDto } from '../listing/dto/response-short-listing.d
 import { Paginate } from '../common/decorators/paginate.decorator';
 import { Pagination } from '../common/pagination';
 import { Status } from '@prisma/client';
+import { ResponseCardUserDto } from '../user/dtos/response-card-user.dto';
 
 @ApiTags('place')
 @Controller('place')
@@ -167,6 +168,25 @@ export class PlaceController {
     @Param('uuid') uuid: string,
   ): Promise<ResponseHereDto> {
     return this.placeService.here(uuid, req.user.uuid);
+  }
+
+  // get here
+  @Get(':uuid/here')
+  @Action('view')
+  @Resource('place')
+  @UseGuards(PermissionsGuard)
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'uuid',
+    type: String,
+  })
+  @ApiQueryPaginated()
+  @ApiOkResponsePaginated(ResponseCardUserDto)
+  async getHere(
+    @Paginate() pagination: Pagination,
+    @Param('uuid') uuid: string,
+  ): Promise<PaginationResultDto<ResponseCardUserDto>> {
+    return this.placeService.getHere(pagination, uuid);
   }
 
   @Patch(':uuid')

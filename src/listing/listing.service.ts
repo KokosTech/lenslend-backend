@@ -312,6 +312,50 @@ export class ListingService {
     };
   }
 
+  async getSavedListings(
+    paginate: Pagination,
+    userUuid: string,
+  ): Promise<PaginationResultDto<ResponseShortListingDto>> {
+    const totalCount = await this.prisma.userSavedListings.count({
+      where: {
+        user_uuid: userUuid,
+        deleted_at: null,
+      },
+    });
+
+    const savedListings = await this.prisma.userSavedListings.findMany({
+      where: {
+        user_uuid: userUuid,
+        deleted_at: null,
+      },
+      select: {
+        listing: {
+          select: ShortListingSelect,
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+      skip: paginate.page * paginate.limit - paginate.limit,
+      take: paginate.limit,
+    });
+
+    const result = savedListings.map((saved) => {
+      const [thumbnail] = saved.listing.images;
+      return {
+        ...saved.listing,
+        thumbnail,
+      };
+    });
+
+    return {
+      data: plainToInstance(ResponseShortListingDto, result),
+      page: paginate.page,
+      limit: paginate.limit,
+      totalCount,
+    };
+  }
+
   async update(
     uuid: string,
     userUuid: string,

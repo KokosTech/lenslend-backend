@@ -15,7 +15,7 @@ import { UserService } from '../user/user.service';
 import { RedisService } from '../redis/redis.service';
 
 import { jwtConstants } from './constants';
-import { SignupDto, SignupOneDto } from './dtos/signupDto';
+import { SignupDto, SignupOneDto } from './dtos/signup.dto';
 import { CreateUserDto } from '../user/dtos/create-user.dto';
 import { RefreshTokenInterface } from './interfaces/refreshToken.interface';
 import { User } from '@prisma/client';
@@ -45,14 +45,11 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
 
-    console.warn('user', user);
-
     if (!user) {
       throw new NotFoundException('NO_USER_FOUND');
     }
 
     if (!(await compare(password, user.password))) {
-      console.warn('THROWING UNAUTHORIZED EXCEPTION');
       throw new UnauthorizedException('INVALID_PASSWORD');
     }
 
@@ -74,32 +71,32 @@ export class AuthService {
   }
 
   async validateSignup(body: SignupDto | SignupOneDto, step: number) {
-    if (step === 1) {
-      if (body.password !== body.confirmPassword) {
-        throw new BadRequestException({
-          message: 'passwordConfirm',
-          code: 'PASSWORDS_DO_NOT_MATCH',
-        });
-      }
+    if (body.password !== body.confirmPassword) {
+      throw new BadRequestException({
+        message: 'passwordConfirm',
+        code: 'PASSWORDS_DO_NOT_MATCH',
+      });
+    }
 
-      const email = await this.userService.findByEmail(body.email);
+    const email = await this.userService.findByEmail(body.email);
 
-      if (email) {
-        throw new ConflictException({
-          message: 'email',
-          code: 'EMAIL_ALREADY_IN_USE',
-        });
-      }
+    if (email) {
+      throw new ConflictException({
+        message: 'email',
+        code: 'EMAIL_ALREADY_IN_USE',
+      });
+    }
 
-      const username = await this.userService.findByUsername(body.username);
+    const username = await this.userService.findByUsername(body.username);
 
-      if (username) {
-        throw new ConflictException({
-          message: 'username',
-          code: 'USERNAME_ALREADY_IN_USE',
-        });
-      }
-    } else if (step === 2 && body instanceof SignupDto) {
+    if (username) {
+      throw new ConflictException({
+        message: 'username',
+        code: 'USERNAME_ALREADY_IN_USE',
+      });
+    }
+
+    if (step === 2 && body instanceof SignupDto) {
       const phone = await this.userService.findByPhone(body.phone);
 
       if (phone) {
@@ -142,7 +139,7 @@ export class AuthService {
     }
 
     const expiresInSeconds = exp - Math.floor(Date.now() / 1000) + 1;
-    await this.redisService.setex(tokenId, 'true', expiresInSeconds);
+    await this.redisService.setex(tokenId, id, expiresInSeconds);
 
     return {
       access_token: accessToken,
@@ -151,6 +148,10 @@ export class AuthService {
   }
 
   async refreshTokens(id: string, tokenId: string) {
+    if (!id) {
+      throw new UnauthorizedException('NO_TOKEN_PROVIDED');
+    }
+
     const isTokenIdValid = await this.redisService.get(tokenId);
     if (isTokenIdValid) {
       throw new UnauthorizedException('INVALID_REFRESH_TOKEN');

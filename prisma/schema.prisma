@@ -30,7 +30,6 @@ model User {
   updated_at        DateTime            @default(now()) @updatedAt
   deleted_at        DateTime?
   settings          UserSettings?
-  savedListings     Listing[]           @relation("SavedListings")
   listings          Listing[]           @relation("UserListings")
   listingComments   ListingComment[]
   listingsRatings   ListingRating[]
@@ -43,7 +42,6 @@ model User {
   PlaceVisitors     PlaceVisitor[]      @relation("PlaceVisitors")
   PlaceReview       PlaceReview[]
   PlaceReport       PlaceReport[]
-  PlaceReviewReply  PlaceReviewReply[]
   UserSavedListings UserSavedListings[]
   UserSavedPlaces   UserSavedPlaces[]
   users_rated       UserRating[]        @relation("user_rated")
@@ -128,7 +126,6 @@ model Listing {
   reports           ListingReport[]
   Tag               Tag?                @relation(fields: [tagUuid], references: [uuid])
   tagUuid           String?
-  savedBy           User[]              @relation("SavedListings")
   UserSavedListings UserSavedListings[]
 }
 
@@ -315,33 +312,19 @@ model PlaceVisitor {
 }
 
 model PlaceReview {
-  uuid             String             @id @default(uuid())
-  rating           Int
-  content          String?
-  status           Status             @default(PUBLIC)
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @default(now()) @updatedAt
-  deleted_at       DateTime?
-  user             User               @relation(fields: [userUuid], references: [uuid])
-  userUuid         String
-  place            Place              @relation(fields: [placeUuid], references: [uuid])
-  placeUuid        String
-  PlaceReviewReply PlaceReviewReply[]
+  uuid       String    @id @default(uuid())
+  rating     Int
+  content    String?
+  status     Status    @default(PUBLIC)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now()) @updatedAt
+  deleted_at DateTime?
+  user       User      @relation(fields: [userUuid], references: [uuid])
+  userUuid   String
+  place      Place     @relation(fields: [placeUuid], references: [uuid])
+  placeUuid  String
 
   @@unique([placeUuid, userUuid])
-}
-
-model PlaceReviewReply {
-  uuid       String      @id @default(uuid())
-  content    String
-  status     Status      @default(PUBLIC)
-  created_at DateTime    @default(now())
-  updated_at DateTime    @default(now()) @updatedAt
-  deleted_at DateTime?
-  user       User        @relation(fields: [userUuid], references: [uuid])
-  userUuid   String
-  review     PlaceReview @relation(fields: [reviewUuid], references: [uuid])
-  reviewUuid String
 }
 
 model PlaceReport {

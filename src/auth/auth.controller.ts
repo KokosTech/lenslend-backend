@@ -4,7 +4,6 @@ import {
   Get,
   Post,
   Request,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -18,7 +17,7 @@ import { BlacklistEntity } from './entities/blacklist.entity';
 
 import { LoginDto } from './dtos/login.dto';
 import { LogoutDto } from './dtos/logout.dto';
-import { SignupDto, SignupOneDto } from './dtos/signupDto';
+import { SignupDto, SignupOneDto } from './dtos/signup.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { RefreshJwtGuard } from './guards/refresh-jwt.guard';
 
@@ -73,13 +72,7 @@ export class AuthController {
     type: AuthEntity,
   })
   async refreshToken(@Request() req: RequestWithTokenInterface) {
-    const { id, tokenId } = req.user;
-
-    if (!id) {
-      throw new UnauthorizedException('NO_TOKEN_PROVIDED');
-    }
-
-    return this.authService.refreshTokens(id, tokenId);
+    return this.authService.refreshTokens(req.user.id, req.user.tokenId);
   }
 
   @Get('blacklist')
