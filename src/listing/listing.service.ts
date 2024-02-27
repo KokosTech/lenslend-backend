@@ -97,9 +97,6 @@ export class ListingService {
         )
       : null;
 
-    console.log('========= category =========');
-    console.log('categories', categories);
-
     const whereClause =
       category && categories
         ? {

@@ -230,12 +230,9 @@ export class PlaceService {
 
     const visitorsRatingsPromise = place.visitors.map(async (visitor) => {
       const newVisitor = plainToInstance(VisitorDto, visitor);
-      console.log('newVisitor', newVisitor);
       return this.userService.getUserRating(newVisitor.user.uuid);
     });
     const visitorRatings = await Promise.all(visitorsRatingsPromise);
-
-    console.log('vis', visitorRatings);
 
     return plainToClass(ResponsePlaceDto, {
       ...place,

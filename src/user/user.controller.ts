@@ -27,6 +27,7 @@ import { Pagination } from '../common/pagination';
 import { Status } from '@prisma/client';
 import { ResponseCardPlaceDto } from '../place/dto/response-card-place.dto';
 import { PlaceService } from '../place/place.service';
+import { RoleGuard } from '../auth/guards/role.guard';
 
 @Controller('user')
 @ApiTags('user')
@@ -152,7 +153,7 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiTags('admin')
@@ -178,5 +179,20 @@ export class UserController {
     @Body() rateUserDto: RateUserDto,
   ) {
     return this.userService.rate(req.user.uuid, username, rateUserDto);
+  }
+
+  //   get if review is already made
+  @Get('rate/:username')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    type: RateUserDto,
+  })
+  async getRate(
+    @Req() req: RequestWithUser,
+    @Param('username') username: string,
+  ) {
+    return this.userService.getRate(req.user.uuid, username);
   }
 }

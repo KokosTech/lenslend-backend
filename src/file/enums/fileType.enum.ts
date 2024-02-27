@@ -3,4 +3,5 @@ export enum FileTypeEnum {
   'jpg' = 'jpg',
   'png' = 'png',
   'webp' = 'webp',
+  'heic' = 'heic',
 }

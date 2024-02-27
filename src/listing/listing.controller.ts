@@ -125,7 +125,7 @@ export class ListingController {
     type: String,
   })
   @ApiOkResponse({
-    description: 'Rate a listing',
+    description: 'Save a listing',
     type: ResponseSavedDto,
     status: 201,
   })

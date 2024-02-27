@@ -62,8 +62,6 @@ export class SearchService {
       take: pagination.limit,
     });
 
-    // TODO: Make the extraction of a thumbnail a separate function
-
     const result = foundListings.map((listing) => {
       const [thumbnail] = listing.images;
       return {

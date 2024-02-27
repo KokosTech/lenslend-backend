@@ -116,8 +116,6 @@ export class UserService {
   async getUserRating(uuid: string | undefined): Promise<number> {
     if (!uuid) return 0;
 
-    console.log('uuid', uuid);
-
     const userRating = await this.prisma.userRating.groupBy({
       by: ['user_rated_uuid'],
       _avg: {
@@ -228,9 +226,6 @@ export class UserService {
       throw new ConflictException('CANNOT_RATE_SELF');
     }
 
-    console.log(srcUuid, targetUser.uuid);
-    console.log(rateUserDto);
-
     const rating = await this.prisma.userRating.upsert({
       where: {
         user_uuid_user_rated_uuid: {
@@ -252,6 +247,28 @@ export class UserService {
           connect: {
             uuid: targetUser.uuid,
           },
+        },
+      },
+      select: {
+        rating: true,
+      },
+    });
+
+    return plainToClass(RateUserDto, rating);
+  }
+
+  async getRate(srcUuid: string, targetUsername: string): Promise<RateUserDto> {
+    const targetUser = await this.findByUsername(targetUsername);
+
+    if (!targetUser) {
+      throw new NotFoundException('USER_NOT_FOUND');
+    }
+
+    const rating = await this.prisma.userRating.findUnique({
+      where: {
+        user_uuid_user_rated_uuid: {
+          user_uuid: srcUuid,
+          user_rated_uuid: targetUser.uuid,
         },
       },
       select: {

@@ -1,24 +1,24 @@
 import * as redis from 'redis';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import * as process from 'process';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private readonly client: redis.RedisClientType;
 
-  constructor() {
+  constructor(private readonly config: ConfigService) {
     this.client = redis.createClient({
-      url: process.env.REDIS_URL,
+      url: this.config.getOrThrow<string>('REDIS_URL'),
       socket: {
         connectTimeout: 5000,
         noDelay: true,
         keepAlive: 1000,
         reconnectStrategy: (retries) => Math.min(retries * 50, 500),
       },
-      username: process.env.REDIS_USERNAME,
-      password: process.env.REDIS_PASSWORD,
-      name: process.env.REDIS_NAME,
-      database: Number(process.env.REDIS_DATABASE) || 0,
+      username: this.config.getOrThrow<string>('REDIS_USERNAME'),
+      password: this.config.getOrThrow<string>('REDIS_PASSWORD'),
+      name: this.config.getOrThrow<string>('REDIS_NAME'),
+      database: this.config.get<number>('REDIS_DATABASE', 0),
     });
 
     this.client.on('error', (error) => {
@@ -26,6 +26,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       console.log(error);
       console.log('===== Redis error =====');
     });
+
     this.client.on('connect', () => {
       console.log('===== Redis connected =====');
     });
