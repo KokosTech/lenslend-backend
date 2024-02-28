@@ -2,6 +2,8 @@
 # lenslend-backend
 [![wakatime](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27.svg)](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27)
 
+![Alt](https://repobeats.axiom.co/api/embed/a3ce9e5eb1f077f9057a2726da937eb6085964fd.svg "Repobeats analytics image")
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
