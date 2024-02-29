@@ -1,80 +1,91 @@
+<img width="80" align="left" src='https://github.com/KokosTech/lenslend-frontend/assets/46886807/25c0a9f0-b454-46dd-80dd-48ecc83b86bf' />
 
 # lenslend-backend
-[![wakatime](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27.svg)](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27)
 
-![Alt](https://repobeats.axiom.co/api/embed/a3ce9e5eb1f077f9057a2726da937eb6085964fd.svg "Repobeats analytics image")
+The backend (API) of a Technology School Electronic Systems thesis project made by Kaloyan Doychinov, class 2024
 
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
+  <img src='https://repobeats.axiom.co/api/embed/a3ce9e5eb1f077f9057a2726da937eb6085964fd.svg' alt="Repobeats analytics image" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+***LensLend*** is an innovative web application designed to facilitate digital content creators by providing a platform for selling and buying, renting and lending recording equipment and offering locations for shoots. Catering to the needs of those involved in video and podcast production, it aims to enhance the quality of content creation by making it easier to access the right technology and ideal settings. Accessible from any device, LensLend serves as a dynamic solution for creators seeking to produce high-quality digital content for platforms like YouTube, Instagram, and TikTok.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![wakatime](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27.svg)](https://wakatime.com/badge/user/f3786457-e08f-4d45-b593-cd8517eacd90/project/018c4172-5fb0-4ad6-a0de-f495db6cab27)
 
-## Description
+## Getting Started
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Installation
+Firstly, install all dependencies:
 
 ```bash
-$ yarn install
+npm install
+# or
+yarn
+# or
+pnpm install
 ```
 
-## Running the app
+Then, create a `.env` file and use the following template from `.env.template`
+
+```env
+DATABASE_URL="<schema>://<username>:<password>@<host>:<port>/<database>?schema=public&pool_timeout=15&connection_limit=5"
+
+JWT_SECRET=<LONG_SECRET>
+JWT_EXPIRES_IN="1h"
+JWT_REFRESH_SECRET=<DIFFERENT_LONG_SECRET>
+JWT_REFRESH_EXPIRES_IN="7d"
+
+# REDIS
+REDIS_URL="redis://default:<password>@<host>:<port>"
+REDIS_USERNAME="default"
+REDIS_PASSWORD=<PASSWORD>
+REDIS_NAME="lenslend"
+REDIS_DATABASE="0"
+
+# AWS
+AWS_S3_REGION=<REGION>
+AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY>
+AWS_SECRET_ACCESS_KEY=<AWS_SECRET_KEY>
+
+AWS_S3_BUCKET_NAME="lenslend"
+AWS_S3_FOLDER="og"
+
+AWS_CLOUDFRONT_URL=<CLOUDFRONT_URL>
+
+NODE_ENV="development"
+VERSION="0.0.1"
+```
+
+And lastly, run the application:
 
 ```bash
 # development
-$ yarn run start
+$ pnpm start
 
 # watch mode
-$ yarn run start:dev
+$ pnpm start:dev
 
 # production mode
-$ yarn run start:prod
+$ pnpm start:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ yarn run test
+$ pnpm test
 
 # e2e tests
-$ yarn run test:e2e
+$ pnpm test:e2e
 
 # test coverage
-$ yarn run test:cov
+$ pnpm test:cov
 ```
 
-## Support
+## Other Repos for LensLend
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Frontend (Web) - https://github.com/KokosTech/lenslend-frontend
 
-## Stay in touch
+<br/>
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+*Created by [Kaloyan Doychinov](https://kaloyan.tech/), Technology School Electronic Systems*
 
