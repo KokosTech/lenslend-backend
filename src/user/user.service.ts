@@ -126,8 +126,6 @@ export class UserService {
       },
     });
 
-    console.log('user ratings', userRating);
-
     return userRating[0] ? roundRating(userRating[0]._avg.rating) : 0;
   }
 
