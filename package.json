@@ -102,5 +102,5 @@
       "nodemailer@<=6.9.8": ">=6.9.9"
     }
   },
-  "packageManager": "pnpm@8.14.1"
+  "packageManager": "pnpm@>=8.14.1"
 }
