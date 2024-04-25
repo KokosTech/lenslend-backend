@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { ChatModule } from './chat/chat.module';
 import { ListingModule } from './listing/listing.module';
 import { LoggerMiddleware } from './logger.middleware';
 import { PlaceModule } from './place/place.module';
@@ -42,7 +41,6 @@ import { ResourceModule } from './resource/resource.module';
     AuthModule,
     ListingModule,
     PlaceModule,
-    ChatModule,
     CategoryModule,
     CommentModule,
     ReviewModule,
