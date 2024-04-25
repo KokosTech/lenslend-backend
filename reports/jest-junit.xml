@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="21" failures="0" errors="0" time="67.649">
+  <testsuite name="src/tag/tag.service.spec.ts" errors="0" failures="0" skipped="0" timestamp="2024-04-25T17:53:38" time="27.114" tests="1">
+    <testcase classname="TagService › createTag" name="should create a new tag" time="0.083">
+    </testcase>
+  </testsuite>
+  <testsuite name="src/file/file.service.spec.ts" errors="0" failures="0" skipped="0" timestamp="2024-04-25T17:53:38" time="28.5" tests="2">
+    <testcase classname="FileService" name="should generate a valid key" time="0.072">
+    </testcase>
+    <testcase classname="FileService" name="should throw an error when AWS S3 folder is not defined" time="0.034">
+    </testcase>
+  </testsuite>
+  <testsuite name="src/user/user.service.spec.ts" errors="0" failures="0" skipped="0" timestamp="2024-04-25T17:53:40" time="63.276" tests="18">
+    <testcase classname="UserService › CreateUserDto" name="should validate a valid CreateUserDto object" time="0.074">
+    </testcase>
+    <testcase classname="UserService › CreateUserDto" name="should fail validation if email is not provided" time="0.006">
+    </testcase>
+    <testcase classname="UserService › CreateUserDto" name="should fail validation if email is not an email" time="0.001">
+    </testcase>
+    <testcase classname="UserService › createUser" name="should create a new user" time="0.049">
+    </testcase>
+    <testcase classname="UserService › createUser" name="should throw ConflictException if email is already in use" time="0.011">
+    </testcase>
+    <testcase classname="UserService › findAll" name="should return a list of users with pagination data" time="0.003">
+    </testcase>
+    <testcase classname="UserService › findAll" name="should return an empty list if no users are in the db" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByEmail" name="should return user if found by email" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByEmail" name="should return null if user not found by email" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByUsername" name="should return user if found by username" time="0.002">
+    </testcase>
+    <testcase classname="UserService › findByUsername" name="should return null if user not found by username" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByPhone" name="should return user if found by phone" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByPhone" name="should return null if user not found by phone" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByUUID" name="should return user if found by UUID" time="0.001">
+    </testcase>
+    <testcase classname="UserService › findByUUID" name="should return null if user not found by UUID" time="0.001">
+    </testcase>
+    <testcase classname="UserService › getUserRating" name="should return 0 if uuid is not provided" time="0.001">
+    </testcase>
+    <testcase classname="UserService › getUserRating" name="should return average rating when user has ratings" time="0.001">
+    </testcase>
+    <testcase classname="UserService › getUserRating" name="should return 0 when user has no ratings" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
