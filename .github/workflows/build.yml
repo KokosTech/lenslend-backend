@@ -29,10 +29,13 @@ jobs:
 
       - name: Install dependencies
         run: npm install -g pnpm && pnpm install --frozen-lockfile
-      - name: Run tests
-        uses: ArtiomTr/jest-coverage-report-action@v2.0-rc.6
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
         with:
-            test-script: pnpm run test:coverage
+            name: JEST Tests            # Name of the check run which will be created
+            path: reports/jest-*.xml    # Path to test results
+            reporter: jest-junit        # Format of test results
   build:
     name: Build and Test NestJS App
     runs-on: ubuntu-latest
