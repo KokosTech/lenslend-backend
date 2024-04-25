@@ -11,8 +11,6 @@ import { UserModule } from '../user/user.module';
 import { CategoryModule } from '../category/category.module';
 
 @Module({
-  controllers: [PlaceController],
-  providers: [PlaceService],
   imports: [
     ReportModule,
     ReviewModule,
@@ -23,6 +21,8 @@ import { CategoryModule } from '../category/category.module';
     forwardRef(() => UserModule),
     forwardRef(() => ResourceModule),
   ],
+  controllers: [PlaceController],
+  providers: [PlaceService],
   exports: [PlaceService],
 })
 export class PlaceModule {}

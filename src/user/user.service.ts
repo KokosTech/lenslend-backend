@@ -126,7 +126,9 @@ export class UserService {
       },
     });
 
-    return userRating[0] ? roundRating(userRating[0]._avg.rating) : 0;
+    return userRating && userRating[0]
+      ? roundRating(userRating[0]._avg.rating)
+      : 0;
   }
 
   async getUserProfile(uuid: string): Promise<ResponseProfileDto> {

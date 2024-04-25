@@ -27,12 +27,29 @@ export class FileService {
     });
   }
 
+  static generateKey(
+    fileParams: FileDto,
+    userUuid: string,
+    awsS3Folder: string | undefined,
+  ): string {
+    if (!awsS3Folder) {
+      throw new Error('AWS S3 folder is not defined');
+    }
+
+    const { name } = fileParams;
+    return `${awsS3Folder}/${userUuid}/${uuid()}-${name}`;
+  }
+
   async uploadFile(
     fileParams: FileDto,
     userUuid: string,
   ): Promise<ResponseFileDto> {
-    const { name, type, acl } = fileParams;
-    const key = `${this.config.get('AWS_S3_FOLDER')}/${userUuid}/${uuid()}-${name}`;
+    const { type, acl } = fileParams;
+    const key = FileService.generateKey(
+      fileParams,
+      userUuid,
+      this.config.get<string>('AWS_S3_FOLDER'),
+    );
 
     const params: PutObjectRequest = {
       Bucket: this.config.get<string>('AWS_S3_BUCKET_NAME'),
