@@ -4,7 +4,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MailerAsyncOptions } from '@nestjs-modules/mailer/dist/interfaces/mailer-async-options.interface';
 
 export const mailerModuleAsyncConfig: MailerAsyncOptions = {
-  useFactory: async (configService: ConfigService): Promise<MailerOptions> => ({
+  useFactory: (configService: ConfigService): MailerOptions => ({
     transport: {
       host: configService.get<string>('MAIL_HOST'),
       port: configService.get<number>('MAIL_PORT'),

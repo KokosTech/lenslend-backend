@@ -48,4 +48,4 @@ async function bootstrap() {
   await app.listen(port ?? 8080);
 }
 
-bootstrap();
+void bootstrap();
