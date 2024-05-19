@@ -343,11 +343,13 @@ export class PlaceService {
       take: pagination.limit,
     });
 
+    const result = savedPlaces.map((p) => ({
+      ...p.place,
+      thumbnail: p.place.images[0],
+    }));
+
     return {
-      data: plainToInstance(
-        ResponseCardPlaceDto,
-        savedPlaces.map((p) => p.place),
-      ),
+      data: plainToInstance(ResponseCardPlaceDto, result),
       ...pagination,
       totalCount,
     };
