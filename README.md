@@ -15,6 +15,7 @@ The backend (API) of a Technology School Electronic Systems thesis project made 
 ## Documentation
 
 You can find the API (OpenAPI - Swagger) documentation [here](https://lenslend-api.kaloyan.tech/api).
+The thesis documentation could be found [here on the Web Archive](https://archive.org/details/lenslend).
 
 ## Getting Started
 
